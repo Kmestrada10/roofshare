@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
 
 if (!isset($_SESSION['user_email']) || !isset($_SESSION['user_type'])) {
@@ -6,7 +8,7 @@ if (!isset($_SESSION['user_email']) || !isset($_SESSION['user_type'])) {
     exit();
 }
 
-require_once("config/db.php");
+require_once("configuration/db.php");
 
 $email = $_SESSION['user_email'];
 $type = $_SESSION['user_type'];
