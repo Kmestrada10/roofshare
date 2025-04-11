@@ -7,19 +7,19 @@ $listings = [
         'image' => 'assets/images/apartment-placeholder.jpg',
         'location' => 'Harpers Ferry, West Virginia',
         'distance' => '1.2 miles away',
-        'price' => '$1,850/month'
+        'price' => '$1,850 month'
     ],
     [
         'image' => 'assets/images/apartment-placeholder.jpg',
         'location' => 'Charles Town, West Virginia',
         'distance' => '3.5 miles away',
-        'price' => '$1,650/month'
+        'price' => '$1,650 month'
     ],
     [
         'image' => 'assets/images/apartment-placeholder.jpg',
         'location' => 'Shepherdstown, West Virginia',
         'distance' => '5.8 miles away',
-        'price' => '$1,750/month'
+        'price' => '$1,750 month'
     ],
 ];
 
@@ -58,7 +58,7 @@ $listings = [
     <section class="listings-section">
         <div class="listings-outer-container">
             <div class="listings-content-wrapper">
-                <h2 class="listings-heading">Explore Eentals in the Area</h2>
+                <h2 class="listings-heading">Explore Rentals in the Area</h2>
                 
                 <div class="listings-inner-container">
                     <?php foreach ($listings as $listing): ?>
