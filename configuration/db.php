@@ -9,8 +9,7 @@ try {
     $db = new PDO($dsn, $user, $pass);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} 
-catch (PDOException $e) {
+} catch (PDOException $e) {
     die("Database connection failed");
 }
 
@@ -18,5 +17,3 @@ function hashPassword($password) {
     return password_hash($password, PASSWORD_BCRYPT);
 }
 ?>
-
-
