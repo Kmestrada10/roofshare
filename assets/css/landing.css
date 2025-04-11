@@ -1,0 +1,261 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 30px;
+  height: 70px;
+  background-color: white;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-links {
+  display: flex;
+  gap: 25px;
+}
+
+.header-link {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+/* .header-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+} */
+
+@media (max-width: 480px) {
+  .header {
+    height: 60px;
+    padding: 0 15px;
+  }
+
+  .header-links {
+    gap: 10px;
+  }
+
+  .header-link {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+}
+
+.hero-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  padding: 40px 20px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+    url("../images/hero.jpeg");
+  background-size: cover;
+  background-position: center center;
+  color: white;
+  text-align: center;
+}
+
+.content-wrapper {
+  max-width: 800;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.headline {
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.search-bar-container {
+  display: flex;
+  width: 100%;
+  max-width: 650px;
+  background-color: white;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 25px;
+  height: 60px;
+}
+
+.search-input {
+  flex-grow: 1;
+  border: none;
+  padding: 15px 25px;
+  font-size: 1.1rem;
+  outline: none;
+  color: #333;
+  height: 100%;
+  background-color: white;
+}
+
+.search-input::placeholder {
+  color: #888;
+}
+
+.search-button {
+  background-color: white;
+  color: #555;
+  border: none;
+  padding: 0 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: color 0.2s ease;
+  height: 100%;
+  border-radius: 0 50px 50px 0;
+}
+
+.search-button:hover {
+  color: #000;
+}
+
+@media (min-width: 768px) {
+  .hero-container {
+    min-height: 65vh;
+  }
+
+  .headline {
+    font-size: 3.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    height: 60px;
+    padding: 0 15px;
+  }
+
+  .header-links {
+    gap: 10px;
+  }
+
+  .header-link {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+
+  .headline {
+    font-size: 2rem;
+  }
+
+  .search-bar-container {
+    height: 50px;
+  }
+
+  .listings-heading {
+    font-size: 1.5rem;
+  }
+
+  .listing-item {
+    width: 100%;
+  }
+}
+
+.listings-section {
+  width: 100%;
+  padding: 40px 20px;
+  background-color: white;
+}
+
+.listings-outer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Wrapper to center the heading + cards block */
+.listings-content-wrapper {
+  width: -moz-fit-content; /* For Firefox */
+  width: fit-content; /* Shrink-wrap content */
+  margin: 0 auto;
+}
+
+.listings-inner-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 35px;
+}
+
+.listings-heading {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #333;
+  text-align: left;
+}
+
+.listing-item {
+  width: 300px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.listing-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.listing-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+  display: block;
+}
+
+/* .listing-details {
+
+} */
+
+.listing-location {
+  font-size: 1rem;
+  color: #333;
+  padding-top: 10px;
+  margin-bottom: 5px;
+}
+
+.listing-distance {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.listing-price {
+  font-size: 1rem;
+  color: #333;
+  padding-bottom: 10px;
+  font-weight: 600;
+}
+
+/* @media (max-width: 767px) {
+  .listing-item {
+  }
+} */
+
+@media (max-width: 480px) {
+  .listing-item {
+    width: 100%;
+  }
+}
