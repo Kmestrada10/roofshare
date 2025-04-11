@@ -12,8 +12,5 @@ try {
 } catch (PDOException $e) {
     die("Database connection failed");
 }
-
-function hashPassword($password) {
-    return password_hash($password, PASSWORD_BCRYPT);
-}
 ?>
+
