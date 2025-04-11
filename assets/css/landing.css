@@ -62,7 +62,7 @@ body {
   min-height: 60vh;
   padding: 40px 20px;
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-    url("/api/placeholder/1200/800"); /* Placeholder image */
+    url("../images/hero.jpeg");
   background-size: cover;
   background-position: center center;
   color: white;
@@ -90,18 +90,18 @@ body {
   width: 100%;
   max-width: 650px;
   background-color: white;
-  border-radius: 50px; /* Fully rounded corners */
+  border-radius: 50px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 25px;
-  height: 60px; /* Increased height for thicker search bar */
+  height: 60px;
 }
 
 .search-input {
   flex-grow: 1;
   border: none;
-  padding: 15px 25px; /* Increased padding for thicker appearance */
-  font-size: 1.1rem; /* Slightly larger text */
+  padding: 15px 25px;
+  font-size: 1.1rem;
   outline: none;
   color: #333;
   height: 100%;
@@ -113,8 +113,8 @@ body {
 }
 
 .search-button {
-  background-color: white; /* Changed to white */
-  color: #555; /* Icon color */
+  background-color: white;
+  color: #555;
   border: none;
   padding: 0 30px;
   cursor: pointer;
@@ -124,11 +124,11 @@ body {
   font-size: 1.2rem;
   transition: color 0.2s ease;
   height: 100%;
-  border-radius: 0 50px 50px 0; /* Match the container's rounded corners */
+  border-radius: 0 50px 50px 0;
 }
 
 .search-button:hover {
-  color: #000; /* Darker on hover */
+  color: #000;
 }
 
 @media (min-width: 768px) {
@@ -161,6 +161,6 @@ body {
   }
 
   .search-bar-container {
-    height: 50px; /* Slightly smaller on mobile but still thick */
+    height: 50px;
   }
 }

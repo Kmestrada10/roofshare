@@ -10,9 +10,6 @@ require_once 'includes/header.php';
     <link rel="stylesheet" href="assets/css/landing.css"> <!-- Link to CSS -->
 </head>
 <body>
-    <?php // The header is already included above, so the HTML is rendered here ?>
-
-    <!-- Hero section will go here -->
     <section class="hero-container">
         <div class="content-wrapper">
             <h1 class="headline">Find it. Tour it. Own it.</h1>
@@ -34,12 +31,10 @@ require_once 'includes/header.php';
         </div>
     </section>
 
-    <!-- Scripts will go here -->
     <script>
         function handleSearch() {
             const searchInput = document.getElementById('searchInput');
             alert('Search initiated for: ' + searchInput.value);
-            // You can replace the alert with actual search logic later
         }
     </script>
 </body>
