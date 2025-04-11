@@ -1,5 +1,28 @@
 <?php
 require_once 'includes/header.php';
+
+// Sample property listings data (replace with database query later)
+$listings = [
+    [
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Harpers Ferry, West Virginia',
+        'distance' => '1.2 miles away',
+        'price' => '$1,850/month'
+    ],
+    [
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Charles Town, West Virginia',
+        'distance' => '3.5 miles away',
+        'price' => '$1,650/month'
+    ],
+    [
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Shepherdstown, West Virginia',
+        'distance' => '5.8 miles away',
+        'price' => '$1,750/month'
+    ],
+];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +30,7 @@ require_once 'includes/header.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
-    <link rel="stylesheet" href="assets/css/landing.css"> <!-- Link to CSS -->
+    <link rel="stylesheet" href="assets/css/landing.css">
 </head>
 <body>
     <section class="hero-container">
@@ -30,6 +53,31 @@ require_once 'includes/header.php';
             </div>
         </div>
     </section>
+
+    <!-- Listings Section -->
+    <section class="listings-section">
+        <div class="listings-outer-container">
+            <div class="listings-content-wrapper">
+                <h2 class="listings-heading">Explore rentals in the area</h2>
+                
+                <div class="listings-inner-container">
+                    <?php foreach ($listings as $listing): ?>
+                        <div class="listing-item">
+                            <div class="listing-image">
+                                <img src="<?php echo htmlspecialchars($listing['image']); ?>" alt="Property in <?php echo htmlspecialchars($listing['location']); ?>">
+                            </div>
+                            <div class="listing-details">
+                                <div class="listing-location"><?php echo htmlspecialchars($listing['location']); ?></div>
+                                <div class="listing-distance"><?php echo htmlspecialchars($listing['distance']); ?></div>
+                                <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Listings Section -->
 
     <script>
         function handleSearch() {
