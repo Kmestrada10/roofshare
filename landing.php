@@ -58,7 +58,7 @@ $listings = [
     <section class="listings-section">
         <div class="listings-outer-container">
             <div class="listings-content-wrapper">
-                <h2 class="listings-heading">Explore rentals in the area</h2>
+                <h2 class="listings-heading">Explore Eentals in the Area</h2>
                 
                 <div class="listings-inner-container">
                     <?php foreach ($listings as $listing): ?>
