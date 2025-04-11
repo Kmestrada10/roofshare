@@ -1,5 +1,7 @@
- <?php
-require_once("config/db.php");
+<?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+require_once("configuration/db.php");
 session_start();
 
 $view = $_GET['view'] ?? 'login';
