@@ -249,10 +249,10 @@ body {
   font-weight: 600;
 }
 
-@media (max-width: 767px) {
+/* @media (max-width: 767px) {
   .listing-item {
   }
-}
+} */
 
 @media (max-width: 480px) {
   .listing-item {
