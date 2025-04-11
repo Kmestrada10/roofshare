@@ -1,27 +1,74 @@
 <?php
-session_start();
-require 'config/db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header('Location: auth/login.php');
+session_start();
+
+
+require __DIR__ . '/../config/db.php';
+
+
+if (isset($_SESSION['user_id'])) {
+    header('../dashboard.php');
     exit;
 }
 
-$user_type = $_SESSION['user_type'];
-$table = ucfirst($user_type);
-$stmt = $pdo->prepare("SELECT name FROM $table WHERE ".$user_type."_id = ?");
-$stmt->execute([$_SESSION['user_id']]);
-$user = $stmt->fetch();
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    
+    try {
+        
+        $tables = ['Admin', 'Realtor', 'Renter'];
+        foreach ($tables as $table) {
+            $stmt = $db->prepare("SELECT * FROM $table WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
+            
+            if ($user && password_verify($password, $user['password_hash'])) {
+                $_SESSION['user_id'] = $user[strtolower($table).'_id'];
+                $_SESSION['user_type'] = strtolower($table);
+                $_SESSION['user_email'] = $user['email'];
+                $_SESSION['user_name'] = $user['name'];
+                
+                header('Location: ../dashboard.php');
+                exit;
+            }
+        }
+        $error = "Invalid email or password";
+    } catch (PDOException $e) {
+        $error = "System error. Please try later.";
+       
+    }
+}
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - RoofShare</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Login</h1>
+        
+        <?php if ($error): ?>
+            <div class="error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        
+        <p>Don't have an account? <a href="register.php">Register here</a></p>
+    </div>
+</body>
+</html>
 
-<h1>Welcome <?= htmlspecialchars($user['name']) ?></h1>
-<p>You are logged in as <?= $user_type ?></p>
-<a href="auth/logout.php">Logout</a>
-
-<?php if ($user_type === 'renter'): ?>
-    <h2>Renter Dashboard</h2>
-    <p>Search for apartments and roommates here</p>
-<?php elseif ($user_type === 'realtor'): ?>
-    <h2>Realtor Dashboard</h2>
-    <p>Manage your property listings here</p>
-<?php endif; ?>
