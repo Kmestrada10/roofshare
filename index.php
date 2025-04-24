@@ -1,4 +1,4 @@
-<?php
+ <?php
 require_once("config/db.php");
 session_start();
 
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-?>
+?> 
 
 <!DOCTYPE html>
 <html>
@@ -138,8 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body onload="showFields()">
 <div class="container">
-    <?php if (!empty($error)) echo "<p class='error'>$error</p>"; ?>
-    <?php if (!empty($success)) echo "<p class='success'>$success</p>"; ?>
+    <!-- <?php if (!empty($error)) echo "<p class='error'>$error</p>"; ?>
+    <?php if (!empty($success)) echo "<p class='success'>$success</p>"; ?> -->
 
     <?php if ($view === 'register'): ?>
         <h2>Register</h2>
