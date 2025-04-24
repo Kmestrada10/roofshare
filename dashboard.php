@@ -1,17 +1,20 @@
 <?php
 session_start();
 
+/*
 if (!isset($_SESSION['user_email']) || !isset($_SESSION['user_type'])) {
     header("Location: index.php");
     exit();
 }
+*/
 
-require_once("config/db.php");
+// Provide default values if session is not set (or check is commented out)
+$email = $_SESSION['user_email'] ?? 'test@example.com'; // Default email
+$type = $_SESSION['user_type'] ?? 'Admin'; // Default type
 
-$email = $_SESSION['user_email'];
-$type = $_SESSION['user_type'];
+// require_once("config/db.php");
 
-
+/*
 if ($type === 'Admin') {
     $stmt = $db->prepare("SELECT name FROM Admin WHERE email = ?");
 } elseif ($type === 'Realtor') {
@@ -24,6 +27,12 @@ $stmt->execute([$email]);
 $user = $stmt->fetch();
 $name = $user['name'] ?? 'User';
 $verification = $user['verification_status'] ?? '';
+*/
+
+// Add default values since DB is commented out
+$name = 'User'; // Default name
+$verification = ''; // Default verification status
+
 ?>
 
 <!DOCTYPE html>
