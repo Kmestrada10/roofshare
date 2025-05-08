@@ -1,0 +1,97 @@
+:root {
+    --primary-color: #007BFF;
+    --primary-hover: #0056b3;
+    --light-color: #f4f4f4;
+    --text-color: #333;
+    --error-color: #dc3545;
+    --success-color: #28a745;
+    --border-radius: 10px;
+    --transition: all 0.3s ease;
+    --box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--light-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 400px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input, select {
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+input[type="submit"] {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+input[type="submit"]:hover {
+    background-color: var(--primary-hover);
+}
+
+.switch {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.95rem;
+}
+
+.switch a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.error {
+    color: var(--error-color);
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.success {
+    color: var(--success-color);
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.dynamic {
+    display: none;
+}
