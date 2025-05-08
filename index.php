@@ -1,14 +1,14 @@
 <?php
-// Remove the db.php require since this is public page
+
 session_start();
 
-// Redirect logged-in users to their dashboard
+
 if (isset($_SESSION['user_email'])) {
     header("Location: dashboard.php");
     exit();
 }
 
-// Sample property listings data
+
 $listings = [
     [
         'image' => 'assets/images/apartment-placeholder.jpg',
