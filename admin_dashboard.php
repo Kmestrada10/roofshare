@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_email']) || $_SESSION['user_type'] !== 'Admin') {
 
 $email = $_SESSION['user_email'];
 
-// admin role
+
 $stmt = $db->prepare("SELECT name, role FROM Admin WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
@@ -55,7 +55,7 @@ if ($role === 'Administrator') {
 }
 
 if ($role === 'Moderator') {
-    // Only shows reported listings
+  
     $listings = $db->query("
         SELECT DISTINCT l.listing_id, l.title, l.city, l.state, l.price, l.status
         FROM Listing l
