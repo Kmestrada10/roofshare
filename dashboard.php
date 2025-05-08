@@ -8,13 +8,12 @@ if (!isset($_SESSION['user_email']) || !isset($_SESSION['user_type'])) {
     exit();
 }
 
-// Use consistent path: config/db.php instead of configuration/db.php
+
 require_once("config/db.php");
 
 $email = $_SESSION['user_email'];
 $type = $_SESSION['user_type'];
 
-// Fetch user data based on role
 if ($type === 'Admin') {
     $stmt = $db->prepare("SELECT name, role FROM Admin WHERE email = ?");
 } elseif ($type === 'Realtor') {
@@ -29,7 +28,7 @@ $name = $user['name'] ?? 'User';
 $role = $user['role'] ?? '';
 $verification = $user['verification_status'] ?? '';
 
-// Handle logout
+
 if (isset($_GET['logout'])) {
     session_destroy();
     header("Location: index.php");
