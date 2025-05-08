@@ -1,199 +1,141 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-require_once("configuration/db.php");
+// Remove the db.php require since this is public page
 session_start();
 
-$view = $_GET['view'] ?? 'login';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $account_type = $_POST['account_type'] ?? '';
-
-    if ($action === 'register') {
-        $name = $_POST['name'] ?? '';
-        $phone = $_POST['phone_number'] ?? '';
-        $dob = $_POST['dob'] ?? '';
-        $gender = $_POST['gender'] ?? '';
-        $role = $_POST['role'] ?? '';
-
-        if ($name && $email && $password && $account_type) {
-            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-            try {
-                if ($account_type === 'admin' && $role) {
-                    $stmt = $db->prepare("INSERT INTO Admin (name, email, phone_number, password_hash, role) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$name, $email, $phone, $hashedPassword, $role]);
-                } elseif ($account_type === 'realtor') {
-                    $stmt = $db->prepare("INSERT INTO Realtor (name, email, phone_number, password_hash, verification_status) VALUES (?, ?, ?, ?, 'Pending')");
-                    $stmt->execute([$name, $email, $phone, $hashedPassword]);
-                } elseif ($account_type === 'renter' && $dob && $gender) {
-                    $stmt = $db->prepare("INSERT INTO Renter (name, email, phone_number, password_hash, dob, gender) VALUES (?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$name, $email, $phone, $hashedPassword, $dob, $gender]);
-                } else {
-                    throw new Exception("Missing required fields for account type");
-                }
-                $success = "Registration successful! You can now log in.";
-                $view = 'login';
-            } catch (Exception $e) {
-                $error = "Registration failed: " . $e->getMessage();
-            }
-        } else {
-            $error = "Please complete all fields.";
-        }
-    }
-
-    if ($action === 'login') {
-        if ($email && $password) {
-            $stmt = $db->prepare("SELECT * FROM Admin WHERE email = ?");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
-            $type = 'Admin';
-            if (!$user) {
-                $stmt = $db->prepare("SELECT * FROM Realtor WHERE email = ?");
-                $stmt->execute([$email]);
-                $user = $stmt->fetch();
-                $type = 'Realtor';
-            }
-            if (!$user) {
-                $stmt = $db->prepare("SELECT * FROM Renter WHERE email = ?");
-                $stmt->execute([$email]);
-                $user = $stmt->fetch();
-                $type = 'Renter';
-            }
-
-            if ($user && password_verify($password, $user['password_hash'])) {
-                $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_type'] = $type;
-                $_SESSION['verification'] = $user['verification_status'] ?? '';
-                header("Location: dashboard.php");
-                exit();
-            } else {
-                $error = "Incorrect email or password.";
-            }
-        } else {
-            $error = "Enter both email and password.";
-        }
-    }
+// Redirect logged-in users to their dashboard
+if (isset($_SESSION['user_email'])) {
+    header("Location: dashboard.php");
+    exit();
 }
-?> 
 
+// Sample property listings data
+$listings = [
+    [
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Harpers Ferry, West Virginia',
+        'distance' => '1.2 miles away',
+        'price' => '$1,850 month'
+    ],
+    [
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Charles Town, West Virginia',
+        'distance' => '3.5 miles away',
+        'price' => '$1,650 month'
+    ],
+    [
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Shepherdstown, West Virginia',
+        'distance' => '5.8 miles away',
+        'price' => '$1,750 month'
+    ],
+];
+?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>RoofShare | Login / Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Perfect Home | RoofShare</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="assets/css/landing.css">
+    
+    <!-- Auth CSS -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+        .auth-links {
+            position: absolute;
+            top: 25px;
+            right: 30px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            gap: 20px;
+            z-index: 100;
         }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 350px;
-        }
-        h2 {
-            margin-top: 0;
-            text-align: center;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        input, select {
-            margin-bottom: 12px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        input[type="submit"] {
-            background-color: #007BFF;
+        .auth-links a {
             color: white;
-            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            background-color: rgba(0, 123, 255, 0.8);
         }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
+        .auth-links a:hover {
+            background-color: rgba(0, 123, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .switch {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .error { color: red; text-align: center; }
-        .success { color: green; text-align: center; }
     </style>
+</head>
+<body>
+    <!-- Auth Navigation (Top Right) -->
+    <div class="auth-links">
+        <a href="login.php">Log In</a>
+        <a href="register.php">Sign Up</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-container">
+        <div class="content-wrapper">
+            <h1 class="headline">Find it. Tour it. Own it.</h1>
+            
+            <div class="search-bar-container">
+                <input 
+                    id="searchInput" 
+                    class="search-input" 
+                    type="text" 
+                    placeholder="Enter an address, neighborhood, city, or ZIP code" 
+                    aria-label="Search for homes"
+                >
+                <button class="search-button" onclick="handleSearch()" aria-label="Submit search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Listings Section -->
+    <section class="listings-section">
+        <div class="listings-outer-container">
+            <div class="listings-content-wrapper">
+                <h2 class="listings-heading">Explore Rentals in the Area</h2>
+                
+                <div class="listings-inner-container">
+                    <?php foreach ($listings as $listing): ?>
+                        <div class="listing-item">
+                            <div class="listing-image">
+                                <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
+                                     alt="Property in <?php echo htmlspecialchars($listing['location']); ?>"
+                                     loading="lazy">
+                            </div>
+                            <div class="listing-details">
+                                <div class="listing-location"><?php echo htmlspecialchars($listing['location']); ?></div>
+                                <div class="listing-distance"><?php echo htmlspecialchars($listing['distance']); ?></div>
+                                <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                                <button class="view-details" onclick="location.href='login.php'">View Details</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <script>
-        function showFields() {
-            const type = document.getElementById('account_type').value;
-            document.querySelectorAll('.dynamic').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.' + type).forEach(el => el.style.display = 'block');
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput.value.trim() !== '') {
+                window.location.href = 'login.php?redirect=search&q=' + encodeURIComponent(searchInput.value);
+            } else {
+                alert('Please enter a search term');
+            }
         }
     </script>
-</head>
-<body onload="showFields()">
-<div class="container">
-    <!-- <?php if (!empty($error)) echo "<p class='error'>$error</p>"; ?>
-    <?php if (!empty($success)) echo "<p class='success'>$success</p>"; ?> -->
-
-    <?php if ($view === 'register'): ?>
-        <h2>Register</h2>
-        <form method="POST">
-            <input type="hidden" name="action" value="register">
-            <label for="account_type">Account Type</label>
-            <select name="account_type" id="account_type" onchange="showFields()" required>
-                <option value="">Select Account Type</option>
-                <option value="admin">Admin</option>
-                <option value="realtor">Realtor</option>
-                <option value="renter">Renter</option>
-            </select>
-
-            <input type="text" name="name" placeholder="Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="text" name="phone_number" placeholder="Phone Number">
-
-            <select name="role" class="dynamic admin" style="display:none">
-                <option value="">Select Role</option>
-                <option value="Administrator">Administrator</option>
-                <option value="Moderator">Moderator</option>
-            </select>
-
-            <input type="date" name="dob" class="dynamic renter" style="display:none">
-            <select name="gender" class="dynamic renter" style="display:none">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-            </select>
-
-            <input type="submit" value="Register">
-        </form>
-        <div class="switch">
-            Already have an account? <a href="?view=login">Login</a>
-        </div>
-    <?php else: ?>
-        <h2>Login</h2>
-        <form method="POST">
-            <input type="hidden" name="action" value="login">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="submit" value="Login">
-        </form>
-        <div class="switch">
-            Not yet registered? <a href="?view=register">Create an account</a>
-        </div>
-    <?php endif; ?>
-</div>
 </body>
 </html>
-
-
