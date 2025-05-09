@@ -148,7 +148,7 @@ $listings = [
 
         .listings-inner-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             column-gap: 20px;
             row-gap: 40px;
         }
@@ -192,7 +192,10 @@ $listings = [
                 <h2 class="listings-heading">Explore Rentals in the Area</h2>
                 
                 <div class="listings-inner-container">
-                    <?php foreach ($listings as $listing): ?>
+                    <?php 
+                        $limited_listings = array_slice($listings, 0, 6); // Display only the first 6 listings
+                        foreach ($limited_listings as $listing): 
+                    ?>
                         <a href="listing.php?id=<?php echo htmlspecialchars($listing['id']); ?>" class="listing-card-link">
                             <div class="listing-item">
                                 <div class="listing-image">
