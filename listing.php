@@ -3,12 +3,29 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'config/db.php';
+try {
+    require_once 'config/db.php';
+} catch (PDOException $e) {
+    die("Unable to connect to the database. Please try again later.");
+}
 
 // Get property ID from URL
 $property_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
+if ($property_id <= 0) {
+    header("Location: index.php");
+    exit();
+}
+
 try {
+    // First check if the listing exists
+    $check_stmt = $db->prepare("SELECT COUNT(*) FROM Listing WHERE listing_id = ?");
+    $check_stmt->execute([$property_id]);
+    if ($check_stmt->fetchColumn() == 0) {
+        header("Location: index.php");
+        exit();
+    }
+
     // Fetch property details
     $stmt = $db->prepare("
         SELECT l.*, r.name as realtor_name
@@ -42,9 +59,9 @@ try {
     ];
 
 } catch (PDOException $e) {
-    // Log the error and show a user-friendly message
-    error_log("Database error: " . $e->getMessage());
     die("Sorry, there was a problem loading the property details. Please try again later.");
+} catch (Exception $e) {
+    die("An unexpected error occurred. Please try again later.");
 }
 ?>
 <!DOCTYPE html>
@@ -86,6 +103,28 @@ try {
                 <h1><?php echo htmlspecialchars($property['title']); ?></h1>
                 <div class="location"><?php echo htmlspecialchars($property['city'] . ', ' . $property['state']); ?></div>
             </div>
+            <?php
+            // Check if user is logged in and is a renter
+            session_start();
+            $is_saved = false;
+            
+            if (isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter') {
+                // Check if this listing is already saved by the user
+                $result = $db->query("SELECT COUNT(*) FROM Saves WHERE renter_id = {$_SESSION['user_id']} AND listing_id = $property_id");
+                $is_saved = $result->fetchColumn() > 0;
+            }
+            ?>
+            <form action="save_listing.php" method="post" style="display: inline;">
+                <input type="hidden" name="listing_id" value="<?php echo $property_id; ?>">
+                <input type="hidden" name="action" value="<?php echo $is_saved ? 'unsave' : 'save'; ?>">
+                <button type="submit" class="bookmark-button <?php echo $is_saved ? 'saved' : ''; ?>" 
+                        <?php echo (!isset($_SESSION['user_id']) || strtolower($_SESSION['user_type']) !== 'renter') ? 'disabled' : ''; ?>>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                    </svg>
+                    <span><?php echo $is_saved ? 'Saved' : 'Save'; ?></span>
+                </button>
+            </form>
         </div>
 
         <div class="gallery">
@@ -144,5 +183,67 @@ try {
             </div>
         </div>
     </main>
+    <script>
+        document.getElementById('bookmarkBtn')?.addEventListener('click', async function() {
+            if (this.disabled) return;
+            
+            try {
+                const response = await fetch('save_listing.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        listing_id: <?php echo $property_id; ?>,
+                        action: this.classList.contains('saved') ? 'unsave' : 'save'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    this.classList.toggle('saved');
+                    this.querySelector('span').textContent = this.classList.contains('saved') ? 'Saved' : 'Save';
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while saving the listing');
+            }
+        });
+    </script>
+    <style>
+        .bookmark-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .bookmark-button:hover:not(:disabled) {
+            border-color: #666;
+        }
+        
+        .bookmark-button.saved {
+            background: #e31c5f;
+            border-color: #e31c5f;
+            color: white;
+        }
+        
+        .bookmark-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .bookmark-button svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
 </body>
 </html>
