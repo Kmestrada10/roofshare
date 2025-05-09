@@ -47,36 +47,40 @@ $listings = [
     
     <!-- Auth CSS -->
     <style>
+        .header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 30px;
+            height: 70px;
+        }
         .auth-links {
-            position: absolute;
-            top: 25px;
-            right: 30px;
             display: flex;
             gap: 20px;
-            z-index: 100;
         }
         .auth-links a {
-            color: white;
+            color: #333;
             text-decoration: none;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-            background-color: rgba(0, 123, 255, 0.8);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
         }
         .auth-links a:hover {
-            background-color: rgba(0, 123, 255, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            /* background-color: rgba(0, 0, 0, 0.05); Removed hover background */
+            /* transform: translateY(-2px); Removed transform */
+            /* box-shadow: 0 4px 8px rgba(0,0,0,0.1); Removed box-shadow */
         }
     </style>
 </head>
 <body>
-    <!-- Auth Navigation (Top Right) -->
-    <div class="auth-links">
-        <a href="login.php">Log In</a>
-        <a href="register.php">Sign Up</a>
-    </div>
+    <header class="header">
+        <!-- Auth Navigation (Top Right) -->
+        <div class="auth-links">
+            <a href="login.php">Log In</a>
+            <a href="register.php">Sign Up</a>
+        </div>
+    </header>
 
     <!-- Hero Section -->
     <section class="hero-container">
