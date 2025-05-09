@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
 
 if (isset($_GET['logout'])) {
@@ -9,8 +11,7 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
-require_once("config/db.php"); 
-
+require_once("config/db.php");
 
 if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'Realtor') {
     header("Location: login.php");
