@@ -108,7 +108,7 @@
         }
 
         .listings-column-container {
-            width: 500px; /* Increased from 400px */
+            width: 600px; /* Increased from 500px */
             flex-shrink: 0; /* Prevent shrinking */
             padding: 20px 0; /* Keep vertical padding, remove horizontal */
             overflow-y: auto; /* Make this column scrollable */
@@ -123,30 +123,47 @@
             border-radius: 4px;
             background-color: #fff; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            padding: 15px; /* Add some padding to the card itself */
+            padding: 0 15px 15px 15px; /* 0 top, 15px R, 15px B, 15px L */
         }
 
         .listing-item .listing-location-top {
-            font-size: 1.2rem; /* Make it a bit larger */
+            font-size: 1.4rem; /* Increased from 1.2rem */
             font-weight: 600;
-            margin-bottom: 10px;
-            display: block; /* Ensure it's full width */
+            margin-bottom: 5px; /* Adjusted for divider */
+            display: block; /* Ensure it\'s full width */
+        }
+
+        .listing-item .listing-address-sub {
+            font-size: 0.85rem; /* Reduced from 0.9rem */
+            color: #666;
+            margin-bottom: 8px; /* Adjusted for divider */
+            display: block;
+        }
+
+        .listing-item .listing-divider { /* NEW RULE */
+            height: 1px;
+            background-color: #e9ecef;
+            margin-top: 8px;    /* Space above the divider */
+            margin-bottom: 15px; /* Space below the divider */
+            margin-left: -15px; /* Counteract parent's left padding */
+            margin-right: -15px; /* Counteract parent's right padding */
+            width: calc(100% + 30px); /* Expand to fill the space created by negative margins */
         }
 
         .listing-item .listing-content-wrapper { /* New flex wrapper for image and details-column */
             display: flex;
             gap: 15px; /* Space between image and details column */
-            align-items: flex-end; /* Align items to the bottom */
+            align-items: flex-start; /* Align items to the top */
         }
 
         .listing-item .listing-image-left { /* New class for the image on the left */
-            width: 220px; /* Increased width */
+            width: 300px; /* Reduced from 340px */
             flex-shrink: 0; /* Prevent image column from shrinking */
         }
 
         .listing-item .listing-image-left img {
             width: 100%;
-            height: 150px; /* Adjusted height for a balanced wider aspect ratio */
+            height: 200px; /* Reduced from 230px */
             object-fit: cover;
             border-radius: 3px;
         }
@@ -156,17 +173,25 @@
             flex-direction: column; /* Stack details and button vertically */
             flex-grow: 1; /* Allow this column to take remaining space */
             justify-content: space-between; /* Push button to bottom if space allows */
+            min-height: 200px; /* Match new image height */
         }
         
         .listing-item .listing-details-right .listing-info { /* Wrapper for beds/baths, price */
-            font-size: 0.9rem;
+            font-size: 1rem; /* Increased from 0.9rem */
             margin-bottom: 5px;
         }
 
         .listing-item .listing-details-right .listing-price {
-            font-size: 1rem;
+            font-size: 1.1rem; /* Increased from 1rem */
             font-weight: 500;
             margin-bottom: 10px;
+        }
+
+        .listing-item .listing-details-right .listing-amenities {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 10px;
+            line-height: 1.4; /* Helps if amenities wrap to multiple lines */
         }
 
         .listing-item .view-listing-button {
@@ -231,29 +256,37 @@
                     'id' => 101,
                     'image' => 'assets/images/apartment-placeholder.jpg', // Ensure this path is correct
                     'location' => 'Downtown Apartment with View',
+                    'address' => '123 Main St, Anytown, ST 12345',
                     'distance' => 'Beds: 2 | Baths: 2', // Using distance field for other info
-                    'price' => '$2,200 / month'
+                    'price' => '$2,200 / month',
+                    'amenities' => ['Gym', 'Pool', 'Rooftop Deck']
                 ],
                 [
                     'id' => 102,
                     'image' => 'assets/images/apartment-placeholder.jpg',
                     'location' => 'Suburban House with Yard',
+                    'address' => '456 Oak Ln, Suburbia, ST 67890',
                     'distance' => 'Beds: 3 | Baths: 2.5',
-                    'price' => '$2,850 / month'
+                    'price' => '$2,850 / month',
+                    'amenities' => ['Pet Friendly', 'Garage', 'Backyard']
                 ],
                 [
                     'id' => 103,
                     'image' => 'assets/images/apartment-placeholder.jpg',
                     'location' => 'Cozy Studio Near Campus',
+                    'address' => '789 University Ave, Collegetown, ST 10112',
                     'distance' => 'Beds: Studio | Baths: 1',
-                    'price' => '$1,500 / month'
+                    'price' => '$1,500 / month',
+                    'amenities' => ['Furnished', 'Utilities Included', 'On-site Laundry']
                 ],
                 [
                     'id' => 104,
                     'image' => 'assets/images/apartment-placeholder.jpg',
                     'location' => 'Luxury Condo, Full Amenities',
+                    'address' => '101 Sky High Rd, Metropolis, ST 13141',
                     'distance' => 'Beds: 1 | Baths: 1',
-                    'price' => '$1,950 / month'
+                    'price' => '$1,950 / month',
+                    'amenities' => ['Concierge', 'Fitness Center', 'Sauna', 'Parking']
                 ]
             ];
 
@@ -261,6 +294,12 @@
             ?>
                 <div class="listing-item">
                     <div class="listing-location-top"><?php echo htmlspecialchars($listing['location']); ?></div>
+                    <?php if (!empty($listing['address'])): ?>
+                        <div class="listing-address-sub">
+                           <?php echo htmlspecialchars($listing['address']); ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="listing-divider"></div>
                     <div class="listing-content-wrapper">
                         <div class="listing-image-left">
                             <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
@@ -268,10 +307,17 @@
                                  loading="lazy">
                         </div>
                         <div class="listing-details-right">
-                            <div> <!-- Wrapper for top part of details -->
-                                <div class="listing-info"><?php echo htmlspecialchars($listing['distance']); ?></div>
+                            <div> <!-- Wrapper for Price and Info -->
                                 <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                                <div class="listing-info"><?php echo htmlspecialchars($listing['distance']); ?></div>
                             </div>
+
+                            <?php if (!empty($listing['amenities'])): ?>
+                                <div class="listing-amenities">
+                                    <?php echo htmlspecialchars(implode(', ', $listing['amenities'])); ?>
+                                </div>
+                            <?php endif; ?>
+                            
                             <a href="listing.php?id=<?php echo htmlspecialchars($listing['id']); ?>" class="view-listing-button">View Listing</a>
                         </div>
                     </div>
