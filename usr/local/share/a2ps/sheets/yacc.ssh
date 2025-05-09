@@ -1,0 +1,54 @@
+# Style sheet for Yacc/Bison files
+# Copyright (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+# Copyright (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+# $Id: yacc.ssh,v 1.6 1998/01/15 15:02:52 demaille Exp $
+#
+
+#
+# This file is part of a2ps.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+
+## 1.1 Akim Demaille
+# The labeleling is smarter
+
+style Yacc is
+requires a2ps 4.9.8
+
+written by "Akim Demaille <demaille@inf.enst.fr>"
+version is 1.1
+documentation is
+  "Special tokens, and non terminal declarations are highlighted."
+end documentation
+
+ancestors are
+  c
+end ancestors
+
+# Special keywords
+keywords in Keyword_strong are
+#   %union, %token, %right, %left, %nonassoc, %type, %start, %expect,
+#   %%pure_parser, %no_lines, %raw, %token_table
+/%\\(%pure_parser\\|expect\\|left\\|no\\(_lines\\|nassoc\\)\\|r\\(aw\\|ight\\)\\|start\\|t\\(oken\\(\\|_table\\)\\|ype\\)\\|union\\)/
+end keywords
+
+# We want to see the names of the rules defined
+operators are
+  (/^\\([a-zA-Z0-9_]*\\)\\([\t ]*:\\)/ \1 Label_strong, \2 Plain)
+end operators
+
+end style

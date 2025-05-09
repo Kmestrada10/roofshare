@@ -1,0 +1,159 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f7fafc; /* Light gray background for overall page */
+    overflow-x: hidden; 
+}
+
+.auth-wrapper {
+    display: flex;
+    min-height: 100vh; 
+}
+
+.auth-form-section {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    padding: 40px;
+    background-color: #fff; 
+}
+
+.auth-image-section {
+    flex: 1; 
+    background-image: url('../images/roommates.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh; 
+}
+
+.auth-form-section h2 {
+    font-size: 2rem; 
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.auth-form-section form {
+    width: 100%;
+    max-width: 400px; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+.auth-form-section label {
+    font-weight: 500;
+    color: #4A5568; 
+    margin-bottom: -10px; 
+    display: block; /* Ensure label takes full width if needed */
+}
+
+.auth-form-section input[type="text"],
+.auth-form-section input[type="email"],
+.auth-form-section input[type="password"],
+.auth-form-section input[type="date"],
+.auth-form-section select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #CBD5E0; 
+    border-radius: 6px;
+    font-size: 0.95rem;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-form-section input[type="text"]:focus,
+.auth-form-section input[type="email"]:focus,
+.auth-form-section input[type="password"]:focus,
+.auth-form-section input[type="date"]:focus,
+.auth-form-section select:focus {
+    outline: none;
+    border-color: #ff6600; 
+    box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2); 
+}
+
+.auth-form-section input[type="submit"] {
+    background-color: #ff6600; 
+    color: white;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px; 
+}
+
+.auth-form-section input[type="submit"]:hover {
+    background-color: #e65c00; 
+}
+
+.auth-form-section .switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #4A5568;
+}
+
+.auth-form-section .switch a {
+    color: #ff6600; 
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-form-section .switch a:hover {
+    text-decoration: underline;
+}
+
+.error {
+    background-color: #FED7D7; 
+    color: #C53030; 
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.success {
+    background-color: #C6F6D5; 
+    color: #2F855A; 
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+/* Dynamic fields from original JS - ensure they are block for layout */
+.dynamic {
+    /* Base styling if any - already handled by specific input/select rules */
+}
+
+@media (max-width: 992px) { 
+    .auth-wrapper {
+        flex-direction: column;
+    }
+    .auth-image-section {
+        display: none; 
+    }
+    .auth-form-section {
+        width: 100%;
+        min-height: 100vh; 
+        padding: 20px; 
+        box-sizing: border-box;
+    }
+    .auth-form-section form {
+        max-width: 100%; 
+    }
+} 

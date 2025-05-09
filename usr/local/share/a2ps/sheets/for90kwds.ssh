@@ -1,0 +1,116 @@
+# Style sheet for Fortran 90 keywords
+# date 199901??
+# last modified 19990122
+
+#
+# This file is part of a2ps.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+
+style "Fortran 90 Keywords" is
+
+written by "Denis Girou <Denis.Girou@idris.fr>, Alexander Mai <st002279@hrzpub.tu-darmstadt.de>"
+version is 0.32
+requires a2ps version 4.10.4
+
+documentation is
+  "This sheet implements the superset which Fortran 90/95 provides"
+  "over Fortran 77."
+  ""
+  "See the documentation of the style sheet code(fortran)code for more details."
+end documentation
+
+# get the whole Fortran 77 stuff
+ancestors are
+  for77kwds
+end ancestors
+
+keywords in Keyword_strong are
+  allocatable, contains, intent, kind, module, namelist,
+  "optional", pointer,
+  private, public, recursive, result, target, use,
+  "case", /select *case/, /do +while/, where,
+  allocate, continue, cycle, deallocate, exit, nullify,
+  /end *block *data/, /end *file/, 
+  /end *select/, /end *type/, /end *where/
+end keywords
+
+# intrinsics and others
+# I'd like to switch to Keyword only here ?!
+keywords in Keyword_strong are
+  access, adjustl, adjustr, advance, allocated, associated,
+  bit_size, blank, btest, ceiling, char, cshift,
+  date_and_time, dot_product,
+  eoshift, epsilon, exponent,
+  floor,
+  iachar, iand, ichar, ieor, ifix, "in", index, inout, ior, iostat,
+    ishft, ishftc,
+  lbound, len_trim,
+  matmul, maxexponent, maxloc, maxval,
+   merge, minexponent, minloc, minval, modulo, mvbits,
+  nearest, nint, not,
+  out,
+  pack, precision, present, product,
+  range, repeat, reshape, respacing,
+  scale, scan, selected_int_kind, selected_real_kind,
+    set_exponent,shape, size, spacing, spread, sum,
+    system_clock,
+  tiny, transfer,transpose, trim,
+  ubound, unpack,
+  verify
+end keywords
+
+# These additions to F77 are probably not yet complete ...
+optional operators are
+    "/="   \neq,
+    =>     \Rightarrow
+end operators
+
+
+# Implementation of highlighting of procedures etc.
+operators in Plain are
+  # module.  There can be `end' before them
+  (# 1 & 2. The keyword
+   /\\(end[[:space:]]*\\)?\\(module\\)/
+   # 3. Spaces
+   /\\([[:space:]]+\\)/
+   # 4. The label
+   /\\([^[:space:](]+\\)/
+   \1 Keyword_strong, \2 Keyword_strong, \3, \4 Label_strong),
+
+  # module procedure
+  (# 1, 2, 3. The keywords
+   /\\(module\\)\\([[:space:]]+\\)\\(procedure\\)/
+   # 4. Spaces
+   /\\([[:space:]]+\\)/
+   # 5. The label
+   /\\([^[:space:](]+\\)/
+   \1 Keyword_strong, \2, \3 Keyword_strong, \4, \5 Label_strong),
+
+  # Interfaces
+  (# 1, 2, 3. The keywords
+   /\\(interface\\)\\([[:space:]]+\\)\\(assignement\\|operator\\)/
+   # 4. Spaces and opening `('
+   /\\([[:space:]]+(\\)/
+   # 5. The label
+   /\\([^[:space:])]+\\)/
+   # 6. The closing ')'
+   /\\()\\)/
+   \1 Keyword_strong, \2, \3 Keyword_strong, \4, \5 Label_strong, \6)
+end operators
+
+end style

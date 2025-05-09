@@ -1,0 +1,113 @@
+%!
+% Add composite (i.e. accented) characters to any font
+% By J. Chroboczek <jec@dcs.ed.ac.uk>
+% Copyright (c) 1996, 1997 by J. Chroboczek.
+% -- code follows this line --
+%%BeginResource: procset compose 0.7 3
+/makeCompositeDict 20 dict def
+makeCompositeDict begin
+/nameUnique {                           % name nameUnique namexxxxxx
+  dup length exch 1 index string cvs    % length (name)
+  1 index 12 add string dup             % length (name) (...) (...)
+  3 2 roll 0 exch putinterval           % length (name...)
+  dup 3 2 roll
+  rand 12 string cvs
+  putinterval
+} bind def
+
+/doMakeComposite
+{
+  /compositeChars exch def
+  /targetEncoding exch def
+  /baseEncoding exch def
+  /newfontname exch def
+  /oldfontname exch def
+  /oldfont oldfontname findfont def
+  /newfont 20 dict def
+  /oldFontMatrix oldfont /FontMatrix get def
+  /oldFontBBox oldfont /FontBBox get cvlit def
+  /oldfontcopy oldfont length dict def
+
+  newfont begin
+    /FontType 3 def
+    /PaintType 0 def      % not used
+    /FontMatrix [0.001 0 0 0.001 0 0] def
+    /FontBBox
+    [
+      oldFontBBox 0 get oldFontBBox 1 get
+      oldFontMatrix transform
+      [1000 0 0 1000 0 0] transform
+      oldFontBBox 2 get oldFontBBox 3 get
+      oldFontMatrix transform
+      [1000 0 0 1000 0 0] transform
+    ] cvx def
+
+    /StrokeWidth 0 def                  % not used
+
+    /Encoding targetEncoding def
+
+    /Decoding 256 dict def              % invert base encoding vector
+    Decoding begin
+      0 1 255
+      { dup baseEncoding exch get exch def } bind for
+    end
+
+    newfont /compositeChars compositeChars put
+
+    /FontName newfontname def
+
+% make a copy of the original font, reencoding it
+    oldfont
+    oldfontcopy begin
+      {1 index /FID ne
+        {def}
+        {pop pop} ifelse
+      } bind forall
+    end
+    oldfontcopy /Encoding baseEncoding put
+    oldfontname nameUnique oldfontcopy definefont
+    1000 scalefont /OriginalFont exch def
+
+    /BuildChar                          % newfont n BuildChar -
+    {
+      exch begin                        % n
+        /OriginalFont load setfont
+        /Encoding load exch get         % glyphName
+        /compositeChars load dup
+        2 index known                   % glyphName compositeChars known-p
+        { 1 index get                   % glyphName [ 65 x y 129 ]
+          dup 0 get ( ) dup             % glyphName [...] 65 ( ) ( )
+          0 3 index put                 % glyphName [...] 65 (A)
+          dup stringwidth setcharwidth
+          0 0 moveto
+          show pop                      % glyphName [...]
+          dup 1 get 1 index 2 get       % glyphName [...] x y
+          moveto                        % glyphName [...]
+          3 get ( ) dup 3 2 roll        % glyphName ( ) ( ) 129
+          0 exch put                    % glyphName (')
+          show                          % glyphName
+        }
+        { pop
+          /Decoding load                % glyphName Decoding
+          dup 2 index known             % glyphName Decoding known-p
+          { exch get }
+          { pop pop 0 } ifelse          % n'
+          ( ) dup 0 3 index put dup     % n' (A) (A)
+          stringwidth setcharwidth
+          0 0 moveto
+          show                          % n'
+        } ifelse
+        pop
+      end
+    } bind def
+  end                                   % newfont
+  newfontname newfont definefont pop
+} def                                   % doMakeComposite
+end                                     % makeCompositeDict
+
+% oldfontname newfontname baseEncoding targetEncoding compositeChars --
+/makeComposite
+{
+  makeCompositeDict begin doMakeComposite end
+} bind def
+%%EndResource
