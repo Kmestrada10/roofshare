@@ -32,6 +32,7 @@ $name = $user['name'] ?? 'Renter';
     <div class="header">
         <div class="info">Renter</div>
         <div>
+            <a href="roommate_matches.php">Matches</a>
             <a href="roommate_preferences.php">Find Roommate</a>
             <a href="login.php?logout=1">Logout</a>
         </div>
