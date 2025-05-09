@@ -64,7 +64,7 @@ $verification = $user['verification_status'] ?? '';
                     <!-- Property cards will be dynamically inserted here -->
                     <div class="property-card placeholder">
                         <p>No properties listed yet</p>
-                        <a href="add_property.php" class="add-property-btn">Add Your First Property</a>
+                        <a href="add_listing.php" class="add-property-btn">Add Your First Property</a>
                     </div>
                 </div>
             </section>

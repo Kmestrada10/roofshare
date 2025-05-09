@@ -13,13 +13,11 @@ if (!isset($_SESSION['user_email']) || $_SESSION['user_type'] !== 'Admin') {
 
 $email = $_SESSION['user_email'];
 
-
 $stmt = $db->prepare("SELECT name, role FROM Admin WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 $name = $user['name'] ?? 'Admin';
 $role = $user['role'] ?? '';
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['realtor_id'], $_POST['status'])) {
@@ -44,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 $pending_realtors = [];
 $reported_accounts = [];
 $listings = [];
@@ -55,7 +52,6 @@ if ($role === 'Administrator') {
 }
 
 if ($role === 'Moderator') {
-  
     $listings = $db->query("
         SELECT DISTINCT l.listing_id, l.title, l.city, l.state, l.price, l.status
         FROM Listing l
