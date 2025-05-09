@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/login.css"> <!-- Your new stylesheet -->
+    <link rel="stylesheet" href="assets/css/auth_layout.css"> <!-- Changed to new stylesheet -->
     
     <script>
         function showFields() {
@@ -122,59 +122,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body onload="showFields()">
-<div class="container">
-    <?php if (!empty($error)) echo "<p class='error'>$error</p>"; ?>
-    <?php if (!empty($success)) echo "<p class='success'>$success</p>"; ?>
+<div class="auth-wrapper">
+    <div class="auth-form-section">
+        <?php if (!empty($error)) echo "<p class='error'>$error</p>"; ?>
+        <?php if (!empty($success)) echo "<p class='success'>$success</p>"; ?>
 
-    <?php if ($view === 'register'): ?>
-        <h2>Register</h2>
-        <form method="POST">
-            <input type="hidden" name="action" value="register">
-            <label for="account_type">Account Type</label>
-            <select name="account_type" id="account_type" onchange="showFields()" required>
-                <option value="">Select Account Type</option>
-                <option value="admin">Admin</option>
-                <option value="realtor">Realtor</option>
-                <option value="renter">Renter</option>
-            </select>
+        <?php if ($view === 'register'): ?>
+            <h2>Register</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="register">
+                
+                <label for="account_type">Account Type</label>
+                <select name="account_type" id="account_type" onchange="showFields()" required>
+                    <option value="">Select Account Type</option>
+                    <option value="admin">Admin</option>
+                    <option value="realtor">Realtor</option>
+                    <option value="renter">Renter</option>
+                </select>
 
-            <input type="text" name="name" placeholder="Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="text" name="phone_number" placeholder="Phone Number">
+                <label for="name">Name</label>
+                <input type="text" name="name" placeholder="Full Name" required>
+                
+                <label for="email">Email</label>
+                <input type="email" name="email" placeholder="your@email.com" required>
+                
+                <label for="password">Password</label>
+                <input type="password" name="password" placeholder="Password" required>
+                
+                <label for="phone_number">Phone Number (Optional)</label>
+                <input type="text" name="phone_number" placeholder="Phone Number">
 
-            <select name="role" class="dynamic admin" style="display:none">
-                <option value="">Select Role</option>
-                <option value="Administrator">Administrator</option>
-                <option value="Moderator">Moderator</option>
-            </select>
+                <div class="dynamic admin" style="display:none">
+                    <label for="role">Role</label>
+                    <select name="role" class="admin">
+                        <option value="">Select Role</option>
+                        <option value="Administrator">Administrator</option>
+                        <option value="Moderator">Moderator</option>
+                    </select>
+                </div>
 
-            <input type="date" name="dob" class="dynamic renter" style="display:none">
-            <select name="gender" class="dynamic renter" style="display:none">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-            </select>
+                <div class="dynamic renter" style="display:none">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" name="dob" class="renter">
+                </div>
+                <div class="dynamic renter" style="display:none">
+                    <label for="gender">Gender</label>
+                    <select name="gender" class="renter">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
 
-            <input type="submit" value="Register">
-        </form>
-        <div class="switch">
-            Already have an account? <a href="?view=login">Login</a>
-        </div>
-    <?php else: ?>
-        <h2>Login</h2>
-        <form method="POST">
-            <input type="hidden" name="action" value="login">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="submit" value="Login">
-        </form>
-        <div class="switch">
-            Not yet registered? <a href="?view=register">Create an account</a>
-        </div>
-    <?php endif; ?>
+                <input type="submit" value="Register">
+            </form>
+            <div class="switch">
+                Already have an account? <a href="?view=login">Login</a>
+            </div>
+        <?php else: ?>
+            <h2>Login</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="login">
+                <label for="email">Email</label>
+                <input type="email" name="email" placeholder="your@email.com" required>
+                <label for="password">Password</label>
+                <input type="password" name="password" placeholder="Password" required>
+                <input type="submit" value="Login">
+            </form>
+            <div class="switch">
+                Not yet registered? <a href="?view=register">Create an account</a>
+            </div>
+        <?php endif; ?>
+    </div>
+    <div class="auth-image-section">
+        <!-- Background image applied via CSS -->
+    </div>
 </div>
 </body>
 </html>

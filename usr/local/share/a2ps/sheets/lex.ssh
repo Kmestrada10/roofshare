@@ -1,0 +1,62 @@
+# Style sheet for Lex files
+# Copyright (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+# Copyright (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+# $Id: lex.ssh,v 1.7 1998/03/15 15:39:54 demaille Exp $
+#
+
+#
+# This file is part of a2ps.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+
+style Lex is
+requires a2ps 4.9.7
+
+written by "Akim Demaille <demaille@inf.enst.fr>"
+version is 1.2
+
+documentation is
+  "In addition to the C constructs, it highlights the declaration of"
+  "states, and some special samp(%)samp commands."
+end documentation
+
+ancestors are
+  c
+end ancestors
+
+sequences are
+  # Declaration of states
+  /^%[sx] +/ Keyword_strong Label
+    exceptions are / +/ Plain end exceptions
+end sequences
+
+keywords in Keyword_strong are
+  BEGIN, INITIAL, /^%\\(option\\|array\\|pointer\\)/
+end keywords
+
+operators are
+  # Definition of the states a` la flex
+  (/^<\\([^>]*\\)>/ < Plain, \1 Label_strong, > Plain)
+end operators
+
+# Add \' and \" as operators, so that it does not break lex files with
+# rules including them as regexp.
+operators in Plain are
+  "\\\"", "\\\'"
+end operators	
+
+end style

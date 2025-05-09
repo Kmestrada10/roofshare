@@ -1,0 +1,385 @@
+# -*- ksh -*-
+#
+# This file is part of a2ps.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+
+#
+# This file defines the rules used by a2ps to select a style sheet
+# when pretty-printing a file.  It is read from bottom-up, so that
+# the last successful rule is considered.
+#
+# The format of each line is:
+#
+# <pattern> <language key>
+#	In which case the path/filename is matched against the pattern
+#	This helps for special paths, but if you want to match, say,
+#	Makefiles, don't forget `*' so that src/Makefile matches.
+#
+# ** <pattern> <language key>
+#	In which case the result of a call to file(1) upon the
+#	file is matched against the pattern
+#
+# *** <path>
+#	In which case a sheets.map is included at this point.
+#	This may be the case if you define a personal extension
+#	of the system's sheets.map
+#
+# The special language "binary" makes a2ps ignore the file unless
+# --print-anyway is given.
+
+# Note that <language key> is _not_ the nice looking name of the
+# language (e.g., C++, or Common Lisp), but the portable prefix part
+# of the ssh file name (e.g., cpp, or clisp)
+
+# Default language
+*			plain
+
+# Backup files
+*~			binary
+*.bak			binary
+*.bk[0-9]		binary
+
+# Compressed files
+*.gz                    gzip
+** gzip                 gzip
+*.bz                    bzip
+*.bz2                   bzip2
+*.Z                     compress
+** compress             compress
+
+# SCCS files
+[sp].*			binary
+*/[sp].*		binary
+
+# Some binary files we probably don't want to print
+*.tar			binary
+*.tgz			binary
+*.[ao]			binary
+** ELF*			binary
+** data			binary
+** s800shared		binary
+** PA-RISC*		binary
+
+# Troff, Nroff, and Groff files
+# We put them at the top, because it is common to see file(1) say a file
+# is a roff file.  So let's first give a chance to the other rules.
+man/man*/*		roff
+*/man/man*/*		roff
+** *roff*		roff
+
+# a2ps configuration files
+a2ps.cfg		a2psrc
+*/a2ps.cfg		a2psrc
+.a2psrc			a2psrc
+*/.a2psrc		a2psrc
+a2psrc			a2psrc
+*/a2psrc		a2psrc
+
+# portable object (i18n)
+*.po			po
+
+# Makefile's
+*.mk			make
+[Mm]akefile		make
+*/[Mm]akefile		make
+[Mm]akefile.*		make
+*/[Mm]akefile.*		make
+
+# GNUMakefiles
+GNUmakefile		gmake
+*/GNUmakefile		gmake
+
+# Don't let file try to guess something else than `plain'
+# (Some file(1) can easily reply `data' on such files).
+*.doc			plain
+*.txt			plain
+
+# Ada files
+*.ad[abs]		ada
+
+# C files
+*.[chi]			c
+*._c			c
+*.h.in			c
+
+# C++ files
+*.[CH]			cpp
+*.cc			cpp
+*.hh			cpp
+*.[ch]++		cpp
+*.[ch]pp		cpp
+*.[ch]xx		cpp
+*.pdb			cpp
+
+# CAML files
+*.ml			caml
+*.ml[il]		caml
+
+# ChangeLog files
+ChangeLog*		chlog
+*/ChangeLog*		chlog
+
+# claire files
+*.cl			claire
+
+# coq-vernacular files
+*.coq			coqv
+
+# common-lisp files
+*.l			clisp
+*.lisp			clisp
+*.lsp			clisp
+*.clisp			clisp
+
+# DVI files
+# a2ps is not supposed to print them, but it proves useful
+# to define them for the delegations
+*.dvi			dvi
+
+# eiffel files
+*.e			eiffel
+
+# Emacs lisp files
+*.el			elisp
+
+# Encapsulated PostScript files
+*.eps			eps
+*.eps[fi]		eps
+*.pstex			eps
+
+# Fortran files
+# By default a2ps chooses the style sheet `fortran' which tries to
+# support both fixed and free forms of comments.  Nevertheless, this
+# cannot match all your needs, so you may want to specify other rules
+# that map to
+# - for77-fixed, Fortran 77 Fixed form
+# - for77-free, Fortran 77 Free form
+# - for90-fixed, Fortran 90/95 Fixed form
+# - for90-free, Fortran 90/95 Free form
+*.[fF]9[50]		fortran
+*.[fF]77		fortran
+*.[fF]			fortran
+*.for			fortran
+*.FOR			fortran
+
+# GIF Images
+*.gif			gif
+** GIF*			gif
+
+# HTML documents
+** HTML*		html
+*.html			html
+*.htm			html
+
+# initora files
+init.ora		initora
+*/init.ora		initora
+
+# java files
+*java			java
+
+# JPEG images
+*.jpg			jpeg
+*.jpeg			jpeg
+** JPEG*		jpeg
+
+# lace files
+*.ace			lace
+Ace.*			lace
+*/Ace.*			lace
+
+# (F)Lex files
+*.l			lex
+*.lex			lex
+
+# 68000 files
+*.68000			68000
+*.[sS]			68000
+
+# mailfolder files
+*.news			mail
+*.mail			mail
+/tmp/snd.*		mail
+/tmp/print.*		mail
+** mailfolder		mail
+
+# ASN.1 mib files
+*.mib			mib
+
+# modula-2 files (mocka and default extensions)
+*.m[di]			modula2
+*.def			modula2
+*.mod			modula2
+
+# modula-3 files
+*.[im]3			modula3
+
+# o2c files
+*.o2			o2c
+*.o2c			o2c
+
+# oberon files
+*.oberon		oberon
+
+# octave files
+*.octavescript		octave
+*.m			octave
+
+# oracle files
+*.ora			oracle
+
+# Pascal files
+*.pas			pascal
+*.p			pascal
+
+# PDF documents
+*.pdf			pdf
+
+# Perl files
+*.p[ml]			perl
+** *perl*		perl
+
+# plsql files
+*.pk[sb]		plsql
+*.pls			plsql
+
+# PostScript Printer Description files
+*.ppd			ppd
+
+# PostScript files
+*.ps			ps
+*.prn			ps
+** [pP]ost[Ss]cript*	ps
+
+# PreScript files
+*.prescript		pre
+*.biftex		pre
+*.bif			pre
+*.pre			pre
+*.ptf			pre
+
+# prolog files
+*.plg			prolog
+*.pro			prolog
+
+# Promela files
+*.pml			promela
+
+# python files
+** */python		python
+** *pythonscript	python
+*.py			python
+
+# REXX command files
+*.[cC][mM][dD]		rexx
+
+# sather files
+*.sa			sather
+
+# scheme files
+*.scm			scheme
+
+# SDL-88 files
+*.pr			sdl88
+*.sdl			sdl88
+
+# a2ps' style sheet files
+*.ssh			ssh
+
+# sh files
+** */sh*		sh
+** *[Ss]hell		sh
+** *ksh			sh
+
+# Csh files
+.cshrc			csh
+*/.cshrc		csh
+** CShell               csh
+
+# Tcsh
+.tcshrc			tcsh
+*/.tcshrc		tcsh
+** *TenexC              tcsh
+
+# sql files
+*.sql			sql
+
+# sql92 files
+*.sql92			sql92
+
+# Synopsis scripts
+*.scr			synopsis
+*.wscr			synopsis
+*.con			synopsis
+.synopsys_dc.setup	synopsis
+*/.synopsys_dc.setup	synopsis
+
+# (La)TeX files
+*.[dl]tx		tex
+*.cl[os]		tex
+*.sty			tex
+*.tex			tex
+*.pstex_t		tex
+
+# Texinfo files
+*.txi			texinfo
+*.texi			texinfo
+*.texinfo		texinfo
+
+# tcl files
+*.tcl			tcl
+*.tclscript		tcl
+
+# Extended Tcl
+*.tclx			tclx
+** *tclx*		tclx
+
+# Visual Tcl
+*.vtcl			vtcl
+** *vtcl*		vtcl
+
+# tk files
+*.tk			tk
+*.wish			tk
+
+# Unity files
+*.unity			unity
+
+# VERILOG files
+*.v			verilog
+*.vh			verilog
+
+# VHDL files
+*.vhdl			vhdl
+*.vhd			vhdl
+
+# VRML files
+*.wrl			vrml
+
+# XBM images
+*.xbm			xbm
+
+# XPM images
+*.xpm			xpm
+
+# Yacc/Bison grammars
+*.y			yacc
+*.yacc			yacc
+
+# zsh files
+** *zsh*		zsh
