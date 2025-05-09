@@ -31,6 +31,69 @@ $listings = [
         'distance' => '5.8 miles away',
         'price' => '$1,750 month'
     ],
+    [
+        'id' => 4,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Martinsburg, West Virginia',
+        'distance' => '10.1 miles away',
+        'price' => '$1,500 month'
+    ],
+    [
+        'id' => 5,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Bolivar, West Virginia',
+        'distance' => '2.0 miles away',
+        'price' => '$1,900 month'
+    ],
+    [
+        'id' => 6,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Ranson, West Virginia',
+        'distance' => '4.2 miles away',
+        'price' => '$1,550 month'
+    ],
+    [
+        'id' => 7,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Kearneysville, West Virginia',
+        'distance' => '8.5 miles away',
+        'price' => '$1,450 month'
+    ],
+    [
+        'id' => 8,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Inwood, West Virginia',
+        'distance' => '12.3 miles away',
+        'price' => '$1,400 month'
+    ],
+    [
+        'id' => 9,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Falling Waters, West Virginia',
+        'distance' => '15.0 miles away',
+        'price' => '$1,600 month'
+    ],
+    [
+        'id' => 10,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Berkeley Springs, West Virginia',
+        'distance' => '25.2 miles away',
+        'price' => '$1,350 month'
+    ],
+    [
+        'id' => 11,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Hedgesville, West Virginia',
+        'distance' => '18.7 miles away',
+        'price' => '$1,520 month'
+    ],
+    [
+        'id' => 12,
+        'image' => 'assets/images/apartment-placeholder.jpg',
+        'location' => 'Bunker Hill, West Virginia',
+        'distance' => '14.1 miles away',
+        'price' => '$1,480 month'
+    ]
 ];
 ?>
 <!DOCTYPE html>
@@ -79,6 +142,13 @@ $listings = [
             color: inherit;
             display: block;
         }
+
+        .listings-inner-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            column-gap: 20px;
+            row-gap: 40px;
+        }
     </style>
 </head>
 <body>
@@ -104,7 +174,7 @@ $listings = [
                     aria-label="Search for homes"
                 >
                 <button class="search-button" onclick="handleSearch()" aria-label="Submit search">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                     </svg>
                 </button>
