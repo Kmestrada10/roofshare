@@ -205,8 +205,8 @@
         .listing-item .listing-location-top {
             font-size: 1.4rem; /* Increased from 1.2rem */
             font-weight: 600;
-            margin-bottom: 5px; /* Adjusted for divider */
-            display: block; /* Ensure it\'s full width */
+            margin-bottom: 2px; /* Reduced from 5px to bring address closer */
+            display: block; /* Ensure it's full width */
         }
 
         .listing-item .listing-address-sub {
@@ -353,17 +353,17 @@
                     'distance' => 'Beds: 2 | Baths: 2',
                     'price' => '$2,200 / month',
                     'amenities' => ['Gym', 'Pool', 'Rooftop Deck'],
-                    'lat' => 34.0522, 'lng' => -118.2437 // Example Coords (LA)
+                    'lat' => 40.7061, 'lng' => -74.0088 // Lower Manhattan
                 ],
                 [
                     'id' => 102,
                     'image' => 'assets/images/apartment-placeholder.jpg',
-                    'location' => 'Suburban House with Yard',
+                    'location' => 'Brooklyn Townhouse with Garden',
                     'address' => '456 Oak Ln, Suburbia, ST 67890',
                     'distance' => 'Beds: 3 | Baths: 2.5',
                     'price' => '$2,850 / month',
                     'amenities' => ['Pet Friendly', 'Garage', 'Backyard'],
-                    'lat' => 34.1522, 'lng' => -118.3437 // Example Coords (Near LA)
+                    'lat' => 40.6782, 'lng' => -73.9800 // Park Slope, Brooklyn
                 ],
                 [
                     'id' => 103,
@@ -373,7 +373,7 @@
                     'distance' => 'Beds: Studio | Baths: 1',
                     'price' => '$1,500 / month',
                     'amenities' => ['Furnished', 'Utilities Included', 'On-site Laundry'],
-                    'lat' => 40.7128, 'lng' => -74.0060 // Example Coords (NYC)
+                    'lat' => 40.7295, 'lng' => -73.9972 // Greenwich Village (near NYU)
                 ],
                 [
                     'id' => 104,
@@ -383,7 +383,7 @@
                     'distance' => 'Beds: 1 | Baths: 1',
                     'price' => '$1,950 / month',
                     'amenities' => ['Concierge', 'Fitness Center', 'Sauna', 'Parking'],
-                    'lat' => 40.7580, 'lng' => -73.9855 // Example Coords (Near NYC)
+                    'lat' => 40.7549, 'lng' => -73.9840 // Midtown Manhattan
                 ]
             ];
 
