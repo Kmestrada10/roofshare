@@ -11,18 +11,21 @@ if (isset($_SESSION['user_email'])) {
 
 $listings = [
     [
+        'id' => 1,
         'image' => 'assets/images/apartment-placeholder.jpg',
         'location' => 'Harpers Ferry, West Virginia',
         'distance' => '1.2 miles away',
         'price' => '$1,850 month'
     ],
     [
+        'id' => 2,
         'image' => 'assets/images/apartment-placeholder.jpg',
         'location' => 'Charles Town, West Virginia',
         'distance' => '3.5 miles away',
         'price' => '$1,650 month'
     ],
     [
+        'id' => 3,
         'image' => 'assets/images/apartment-placeholder.jpg',
         'location' => 'Shepherdstown, West Virginia',
         'distance' => '5.8 miles away',
@@ -71,6 +74,11 @@ $listings = [
             /* transform: translateY(-2px); Removed transform */
             /* box-shadow: 0 4px 8px rgba(0,0,0,0.1); Removed box-shadow */
         }
+        .listing-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -112,19 +120,20 @@ $listings = [
                 
                 <div class="listings-inner-container">
                     <?php foreach ($listings as $listing): ?>
-                        <div class="listing-item">
-                            <div class="listing-image">
-                                <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
-                                     alt="Property in <?php echo htmlspecialchars($listing['location']); ?>"
-                                     loading="lazy">
+                        <a href="listing.php?id=<?php echo htmlspecialchars($listing['id']); ?>" class="listing-card-link">
+                            <div class="listing-item">
+                                <div class="listing-image">
+                                    <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
+                                         alt="Property in <?php echo htmlspecialchars($listing['location']); ?>"
+                                         loading="lazy">
+                                </div>
+                                <div class="listing-details">
+                                    <div class="listing-location"><?php echo htmlspecialchars($listing['location']); ?></div>
+                                    <div class="listing-distance"><?php echo htmlspecialchars($listing['distance']); ?></div>
+                                    <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                                </div>
                             </div>
-                            <div class="listing-details">
-                                <div class="listing-location"><?php echo htmlspecialchars($listing['location']); ?></div>
-                                <div class="listing-distance"><?php echo htmlspecialchars($listing['distance']); ?></div>
-                                <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
-                                <button class="view-details" onclick="location.href='login.php'">View Details</button>
-                            </div>
-                        </div>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             </div>
