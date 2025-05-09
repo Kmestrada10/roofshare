@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bedrooms      = $_POST['bedrooms'] ?? 0;
     $bathrooms     = $_POST['bathrooms'] ?? 0;
     $max_guests    = $_POST['max_guests'] ?? 1;
+    $amenities     = $_POST['amenities'] ?? []; // Get selected amenities
     
     // Get address data
     $street        = $_POST['street_address'] ?? '';
@@ -64,6 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         
         $listing_id = $db->lastInsertId();
+
+        // Save amenities
+        if (!empty($amenities)) {
+            $amenity_stmt = $db->prepare("
+                INSERT INTO ListingAmenities (listing_id, amenity_id)
+                VALUES (?, ?)
+            ");
+
+            foreach ($amenities as $amenity_id) {
+                $amenity_stmt->execute([$listing_id, $amenity_id]);
+            }
+        }
 
         // Save photos
         if (!empty($_POST['photo_urls'])) {
@@ -171,6 +184,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         >
       </div>
 
+      <input type="hidden" name="city" id="city">
+      <input type="hidden" name="state" id="state">
+      <input type="hidden" name="zip_code" id="zip_code">
+      <input type="hidden" name="country" id="country">
+      <input type="hidden" name="latitude" id="latitude">
+      <input type="hidden" name="longitude" id="longitude">
+      
+      <div id="map-add"></div>
+
       <div class="form-group">
         <label for="photos">Photos</label>
         <div class="photo-upload-container">
@@ -180,14 +202,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
 
-      <input type="hidden" name="city" id="city">
-      <input type="hidden" name="state" id="state">
-      <input type="hidden" name="zip_code" id="zip_code">
-      <input type="hidden" name="country" id="country">
-      <input type="hidden" name="latitude" id="latitude">
-      <input type="hidden" name="longitude" id="longitude">
-      
-      <div id="map-add"></div>
+      <div class="form-group">
+        <label>Amenities</label>
+        <div class="amenities-grid">
+          <?php
+          $amenities_stmt = $db->query("SELECT * FROM Amenities ORDER BY name");
+          while ($amenity = $amenities_stmt->fetch(PDO::FETCH_ASSOC)) {
+            echo '<div class="amenity-item">';
+            echo '<input type="checkbox" id="amenity_' . $amenity['amenity_id'] . '" name="amenities[]" value="' . $amenity['amenity_id'] . '">';
+            echo '<label for="amenity_' . $amenity['amenity_id'] . '">';
+            echo '<span class="amenity-icon">' . $amenity['icon'] . '</span>';
+            echo $amenity['name'];
+            echo '</label>';
+            echo '</div>';
+          }
+          ?>
+        </div>
+      </div>
 
       <input type="submit" value="Add Listing">
     </form>

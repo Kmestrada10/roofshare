@@ -323,4 +323,41 @@ select option {
 
 select option:first-child {
   color: #666;
+}
+
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.amenity-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.amenity-item:hover {
+  background-color: #f5f5f5;
+}
+
+.amenity-item input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.amenity-item label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+}
+
+.amenity-icon {
+  margin-right: 8px;
+  font-size: 1.2em;
+  color: #ff6b6b;
 } 
