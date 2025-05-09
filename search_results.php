@@ -92,6 +92,7 @@
             flex-grow: 1; /* Takes up remaining vertical space */
             overflow: hidden; /* Prevent scrollbars on this container directly */
             width: 100%; /* Explicitly set width */
+            height: 0; /* ADDED: Helps solidify height calculation with flex-grow */
         }
 
         .map-placeholder-container {
@@ -120,9 +121,9 @@
             width: 100%; /* Ensure cards try to take full width of parent column */
             margin-bottom: 20px;
             margin-right: 0 !important; 
-            border-radius: 4px;
+            border-radius: 0; /* Changed from 4px for a straight divider look */
             background-color: #fff; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-bottom: 3px solid #e9ecef; /* ADDED for a straight divider, NOW EVEN THICKER */
             padding: 0 15px 15px 15px; /* 0 top, 15px R, 15px B, 15px L */
         }
 
@@ -199,7 +200,7 @@
             width: 100%; /* Ensure it takes full width of its container */
             margin-top: 10px;
             padding: 10px 15px; /* Adjusted padding slightly */
-            background-color: #007bff;
+            background-color: #ff6600; /* Changed to RoofShare orange */
             color: white;
             text-decoration: none;
             border-radius: 4px;
@@ -207,7 +208,7 @@
             text-align: center;
         }
         .listing-item .view-listing-button:hover {
-            background-color: #0056b3;
+            background-color: #e65c00; /* Changed to darker orange for hover */
         }
 
     </style>
