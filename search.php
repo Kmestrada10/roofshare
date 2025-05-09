@@ -93,7 +93,11 @@ $offset = ($page - 1) * $items_per_page;
                     $property_type = $_GET['property_type'] ?? '';
 
                     try {
-                        // Build search query
+                        if ($latitude === null || $longitude === null) {
+                            throw new Exception("Location coordinates are required");
+                        }
+
+                        // Calculate distance using Haversine formula
                         $query = "SELECT *, 
                                 (3959 * acos(cos(radians(" . floatval($latitude) . ")) * cos(radians(latitude)) * 
                                 cos(radians(longitude) - radians(" . floatval($longitude) . ")) + 
@@ -107,14 +111,13 @@ $offset = ($page - 1) * $items_per_page;
                         
                         $query .= " HAVING distance < " . floatval($radius) . " ORDER BY distance";
 
-                        $stmt = $db->prepare($query);
-                        $stmt->execute();
-                        $listings = $stmt->fetchAll();
+                        $result = $db->query($query);
+                        $listings = $result->fetchAll();
 
                         if ($listings) {
                             echo "<div class='listings-grid'>";
                             foreach ($listings as $listing) {
-                                echo "<div class='listing-card' data-lat='" . htmlspecialchars($listing['latitude']) . "' data-lng='" . htmlspecialchars($listing['longitude']) . "'>";
+                                echo "<div class='listing-card' data-lat='" . $listing['latitude'] . "' data-lng='" . $listing['longitude'] . "'>";
                                 echo "<h3>" . htmlspecialchars($listing['title']) . "</h3>";
                                 echo "<p class='price'>$" . number_format($listing['price']) . "</p>";
                                 echo "<p class='location'>" . htmlspecialchars($listing['city']) . ", " . htmlspecialchars($listing['state']) . "</p>";
@@ -127,7 +130,7 @@ $offset = ($page - 1) * $items_per_page;
                         } else {
                             echo "<p class='no-results'>No listings found within " . $radius . " miles of " . htmlspecialchars($location) . ".</p>";
                         }
-                    } catch (PDOException $e) {
+                    } catch (Exception $e) {
                         echo "<p class='error'>Error: " . htmlspecialchars($e->getMessage()) . "</p>";
                     }
                 }
