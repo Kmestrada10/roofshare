@@ -45,53 +45,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db->beginTransaction();
 
-        // Save listing to database
-        $stmt = $db->prepare("
-          INSERT INTO Listing 
+        // Insert new listing record
+        $query = "INSERT INTO Listing 
             (title, description, price, status,
              property_type, bedrooms, bathrooms,
              max_guests, street_address, city,
              state, zip_code, country, latitude,
              longitude, realtor_id)
           VALUES 
-            (?, ?, ?, 'Available', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
-            $title, $description, $price,
-            $property_type, $bedrooms, $bathrooms,
-            $max_guests, $street, $city, $state,
-            $zip, $country, $latitude, $longitude,
-            $realtor_id
-        ]);
+            ('$title', '$description', $price,
+            'Available', '$property_type', $bedrooms, $bathrooms,
+            $max_guests, '$street', '$city', '$state',
+            '$zip', '$country', $latitude, $longitude,
+            $realtor_id)";
         
+        $db->query($query);
         $listing_id = $db->lastInsertId();
 
-        // Save amenities
+        // Add selected amenities
         if (!empty($amenities)) {
-            $amenity_stmt = $db->prepare("
-                INSERT INTO ListingAmenities (listing_id, amenity_id)
-                VALUES (?, ?)
-            ");
-
             foreach ($amenities as $amenity_id) {
-                $amenity_stmt->execute([$listing_id, $amenity_id]);
+                $db->query("INSERT INTO ListingAmenities (listing_id, amenity_id) VALUES ($listing_id, $amenity_id)");
             }
         }
 
-        // Save photos
+        // Add uploaded photos
         if (!empty($_POST['photo_urls'])) {
-            $photo_stmt = $db->prepare("
-                INSERT INTO ListingPhoto (listing_id, photo_url, photo_order)
-                VALUES (?, ?, ?)
-            ");
-
             $photo_urls = explode(',', $_POST['photo_urls']);
             foreach ($photo_urls as $key => $photo_url) {
-                $photo_stmt->execute([
-                    $listing_id,
-                    $photo_url,
-                    $key + 1
-                ]);
+                $db->query("INSERT INTO ListingPhoto (listing_id, photo_url, photo_order) VALUES ($listing_id, '$photo_url', " . ($key + 1) . ")");
             }
         }
 
