@@ -8,24 +8,19 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/lucide-react.min.js">
     <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        body {
-          font-family: "Montserrat", sans-serif;
-          color: #333;
-          background-color: white;
-        }
+        /* Styles for header from listing.css - Global * and body initially omitted */
+        /* body {
+          font-family: "Montserrat", sans-serif; 
+          color: #333; 
+          background-color: white; 
+        } */
 
         .header {
           display: flex;
           align-items: center;
           padding: 0 20px;
           height: 80px;
-          background-color: white;
+          background-color: white; 
           width: 100%;
           border-bottom: 1px solid #eee;
           position: sticky;
@@ -54,7 +49,7 @@
           padding: 0 20px;
           font-size: 0.9rem;
           outline: none;
-          color: #333;
+          color: #333; 
           height: 100%;
           background-color: white;
         }
@@ -136,6 +131,36 @@
             fill: none;
             stroke: currentColor;
         }
+
+        .cta-button {
+          width: 100%;
+          background-color: #ff6600;
+          color: white;
+          border: none;
+          padding: 14px;
+          font-size: 1rem;
+          font-weight: 600;
+          border-radius: 8px;
+          cursor: pointer;
+          text-align: center;
+          transition: background-color 0.2s ease;
+        }
+
+        .cta-button:hover {
+          background-color: #e65c00;
+        }
+
+        .custom-orange-button {
+          background-color: #fb923c; /* Tailwind orange-400 */
+        }
+        .custom-orange-button:hover {
+          background-color: #f97316; /* Tailwind orange-500 for hover */
+        }
+
+        .force-square-shape {
+            aspect-ratio: 1 / 1 !important;
+            height: auto !important; /* Attempt to override any fixed height */
+        }
     </style>
 </head>
 <body>
@@ -163,7 +188,7 @@
     </header>
 
       <!-- Main Content -->
-      <main class="max-w-5xl mx-auto px-6 py-8">
+      <main class="max-w-5xl mx-auto px-6 py-8" style="position: relative; z-index: 1;">
         <div class="space-y-8">
           <!-- Title Section -->
           <div>
@@ -321,22 +346,22 @@
               
               <!-- Photo Preview Grid -->
               <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="aspect-square bg-gray-100 rounded-lg border flex items-center justify-center">
+                <div class="force-square-shape bg-gray-100 rounded-lg border flex items-center justify-center">
                   <div class="text-center text-gray-400">
                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera w-8 h-8 mx-auto mb-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                     <span class="text-sm">Main Image</span>
                   </div>
                 </div>
-                <div class="aspect-square bg-gray-100 rounded-lg border flex items-center justify-center">
+                <div class="force-square-shape bg-gray-100 rounded-lg border flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera w-8 h-8 text-gray-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                 </div>
-                <div class="aspect-square bg-gray-100 rounded-lg border flex items-center justify-center">
+                <div class="force-square-shape bg-gray-100 rounded-lg border flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera w-8 h-8 text-gray-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                 </div>
-                <div class="aspect-square bg-gray-100 rounded-lg border flex items-center justify-center">
+                <div class="force-square-shape bg-gray-100 rounded-lg border flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera w-8 h-8 text-gray-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                 </div>
-                 <div class="aspect-square bg-gray-100 rounded-lg border flex items-center justify-center">
+                 <div class="force-square-shape bg-gray-100 rounded-lg border flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera w-8 h-8 text-gray-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                 </div>
               </div>
@@ -409,7 +434,7 @@
             <div class="pt-8">
               <button
                 type="button"
-                class="w-full bg-orange-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-700 transition duration-200"
+                class="w-full custom-orange-button text-white py-3 px-6 rounded-lg font-medium transition duration-200"
               >
                 Create Listing
               </button>
