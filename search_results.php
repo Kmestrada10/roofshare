@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <!-- Main CSS (assuming this contains styles for .listing-item, etc.) -->
     <link rel="stylesheet" href="assets/css/landing.css">
     
@@ -31,7 +34,7 @@
         }
         .header {
             display: flex;
-            justify-content: space-between; /* Changed for logo and auth links */
+            justify-content: flex-end; /* Changed from space-between */
             align-items: center;
             padding: 0 30px;
             height: 70px;
@@ -64,15 +67,39 @@
             display: flex;
             gap: 15px;
             align-items: center;
-            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+            flex-wrap: nowrap; /* Changed from wrap */
         }
         .search-filters-bar input[type="text"],
         .search-filters-bar select {
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
+            padding: 10px; /* Default padding, will be more specific below */
+            border: 1px solid #ccc; /* Default border, changed from #ced4da */
+            border-radius: 8px; /* Default radius, changed from 4px */
             font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            height: 40px; /* Reduced from 44px */
+            box-sizing: border-box; /* Ensure padding is included in height */
+            flex: 0 1 auto; /* Allow shrinking, don't grow, basis from content */
+            min-width: 100px; /* Reduced from 110px */
         }
+
+        /* Specific padding for text inputs that don't need space for an arrow */
+        .search-filters-bar input[type="text"] {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        
+        /* Specific styling for select elements to include custom arrow */
+        .search-filters-bar select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 10px auto;
+            padding-left: 15px; /* Consistent left padding */
+            padding-right: 40px; /* Make space for the arrow */
+            outline: none;
+        }
+
         .search-filters-bar button {
             padding: 10px 20px;
             background-color: #ff6600;
@@ -85,6 +112,51 @@
         }
         .search-filters-bar button:hover {
             background-color: #e65c00;
+        }
+
+        /* Styles for the new main search input wrapper */
+        .search-filters-bar .main-search-wrapper {
+            display: flex;
+            flex: 1 1 450px; /* Basis increased from 380px */
+            border: 1px solid #ccc;
+            border-radius: 50px; /* Fully rounded */
+            overflow: hidden;
+            background-color: white;
+            align-items: stretch; /* Make children fill height */
+        }
+
+        .search-filters-bar .main-search-wrapper input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            padding: 10px 15px; /* Adjusted padding */
+            border-radius: 0;
+            outline: none;
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            background-color: transparent;
+            margin: 0; /* Reset margin */
+        }
+
+        .search-filters-bar .main-search-wrapper button {
+            background-color: white; 
+            color: #ff6600; /* Orange icon */
+            border: none;
+            border-left: 1px solid #eee; /* Subtle separator */
+            padding: 0 15px; 
+            border-radius: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem; /* Icon size */
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-family: 'Montserrat', sans-serif; 
+            margin: 0; /* Reset margin */
+        }
+
+        .search-filters-bar .main-search-wrapper button:hover {
+            background-color: #f8f8f8;
+            color: #e65c00; /* Darker orange icon */
         }
 
         .main-content-area {
@@ -215,9 +287,9 @@
 </head>
 <body>
     <header class="header">
-        <div class="logo">
+        <?php /* <div class="logo">
             <a href="index.php">RoofShare</a>
-        </div>
+        </div> */ ?>
         <div class="auth-links">
             <a href="login.php">Log In</a>
             <a href="register.php">Sign Up</a>
@@ -225,7 +297,18 @@
     </header>
 
     <div class="search-filters-bar">
-        <input type="text" placeholder="City, State, or ZIP">
+        <div class="main-search-wrapper">
+            <input type="text" placeholder="City, State, or ZIP">
+            <button type="button"><i class="fas fa-search"></i></button>
+        </div>
+        <select name="property_type">
+            <option value="">Property Type (Any)</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="condo">Condo</option>
+            <option value="townhouse">Townhouse</option>
+            <option value="studio">Studio</option>
+        </select>
         <select name="beds">
             <option value="">Beds (Any)</option>
             <option value="1">1 Bed</option>
@@ -242,7 +325,13 @@
         </select>
         <input type="text" placeholder="Min Price">
         <input type="text" placeholder="Max Price">
-        <button type="button">Search</button>
+        <select name="order_by">
+            <option value="">Order By</option>
+            <option value="price_asc">Price (Low to High)</option>
+            <option value="price_desc">Price (High to Low)</option>
+            <option value="date_new">Date (Newest First)</option>
+            <option value="date_old">Date (Oldest First)</option>
+        </select>
     </div>
 
     <div class="main-content-area">
