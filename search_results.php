@@ -13,7 +13,10 @@
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- Main CSS (assuming this contains styles for .listing-item, etc.) -->
+    <?php /* <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/> */ ?>
+
+    <!-- Main CSS -->
     <link rel="stylesheet" href="assets/css/landing.css">
     
     <style>
@@ -167,17 +170,17 @@
             height: 0; /* ADDED: Helps solidify height calculation with flex-grow */
         }
 
-        .map-placeholder-container {
-            /* width: 60%; */ /* Removed percentage width */
-            flex-grow: 1; /* Added to take remaining space */
+        #map-container { /* Changed from .map-placeholder-container */
+            flex-grow: 1;
             width: 0; /* Common practice with flex-grow */
-            background-color: #e0f2e9; /* Light green placeholder */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #28a745; /* Darker green text */
-            overflow-y: auto; /* Allow map to scroll if its content is too tall, though not expected for a placeholder */
+            /* background-color: #e0f2e9; Removed placeholder style */
+            /* display: flex; Removed placeholder style */
+            /* align-items: center; Removed placeholder style */
+            /* justify-content: center; Removed placeholder style */
+            /* font-size: 1.5rem; Removed placeholder style */
+            /* color: #28a745; Removed placeholder style */
+            overflow-y: hidden; /* Map handles its own overflow/panning */
+            height: 100%; /* Ensure it takes full height of parent */
         }
 
         .listings-column-container {
@@ -335,8 +338,8 @@
     </div>
 
     <div class="main-content-area">
-        <div class="map-placeholder-container">
-            Map Placeholder (Green Square)
+        <div id="map-container">
+            <!-- Map will be initialized here by Google Maps -->
         </div>
         <div class="listings-column-container">
             <?php
@@ -344,12 +347,13 @@
             $search_listings = [
                 [
                     'id' => 101,
-                    'image' => 'assets/images/apartment-placeholder.jpg', // Ensure this path is correct
+                    'image' => 'assets/images/apartment-placeholder.jpg',
                     'location' => 'Downtown Apartment with View',
                     'address' => '123 Main St, Anytown, ST 12345',
-                    'distance' => 'Beds: 2 | Baths: 2', // Using distance field for other info
+                    'distance' => 'Beds: 2 | Baths: 2',
                     'price' => '$2,200 / month',
-                    'amenities' => ['Gym', 'Pool', 'Rooftop Deck']
+                    'amenities' => ['Gym', 'Pool', 'Rooftop Deck'],
+                    'lat' => 34.0522, 'lng' => -118.2437 // Example Coords (LA)
                 ],
                 [
                     'id' => 102,
@@ -358,7 +362,8 @@
                     'address' => '456 Oak Ln, Suburbia, ST 67890',
                     'distance' => 'Beds: 3 | Baths: 2.5',
                     'price' => '$2,850 / month',
-                    'amenities' => ['Pet Friendly', 'Garage', 'Backyard']
+                    'amenities' => ['Pet Friendly', 'Garage', 'Backyard'],
+                    'lat' => 34.1522, 'lng' => -118.3437 // Example Coords (Near LA)
                 ],
                 [
                     'id' => 103,
@@ -367,7 +372,8 @@
                     'address' => '789 University Ave, Collegetown, ST 10112',
                     'distance' => 'Beds: Studio | Baths: 1',
                     'price' => '$1,500 / month',
-                    'amenities' => ['Furnished', 'Utilities Included', 'On-site Laundry']
+                    'amenities' => ['Furnished', 'Utilities Included', 'On-site Laundry'],
+                    'lat' => 40.7128, 'lng' => -74.0060 // Example Coords (NYC)
                 ],
                 [
                     'id' => 104,
@@ -376,7 +382,8 @@
                     'address' => '101 Sky High Rd, Metropolis, ST 13141',
                     'distance' => 'Beds: 1 | Baths: 1',
                     'price' => '$1,950 / month',
-                    'amenities' => ['Concierge', 'Fitness Center', 'Sauna', 'Parking']
+                    'amenities' => ['Concierge', 'Fitness Center', 'Sauna', 'Parking'],
+                    'lat' => 40.7580, 'lng' => -73.9855 // Example Coords (Near NYC)
                 ]
             ];
 
@@ -416,5 +423,66 @@
         </div>
     </div>
 
+    <?php /* <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> */ ?>
+    
+    <script>
+        // Get listing data from PHP for Google Maps
+        const listingsData = <?php echo json_encode($search_listings); ?>;
+        let map;
+        let infoWindow;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map-container'), {
+                center: { lat: 37.8, lng: -96 }, // Default center (US)
+                zoom: 4, // Default zoom
+                mapTypeControl: false, // Optional: hide map type control
+                streetViewControl: false // Optional: hide street view control
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+            const bounds = new google.maps.LatLngBounds();
+
+            if (listingsData && listingsData.length > 0) {
+                listingsData.forEach(function(listing) {
+                    if (listing.lat && listing.lng) {
+                        const marker = new google.maps.Marker({
+                            position: { lat: parseFloat(listing.lat), lng: parseFloat(listing.lng) },
+                            map: map,
+                            title: listing.location
+                        });
+
+                        marker.addListener('click', function() {
+                            infoWindow.setContent(
+                                '<div><strong>' + listing.location + '</strong><br>' +
+                                listing.address + '</div>'
+                            );
+                            infoWindow.open(map, marker);
+                        });
+                        bounds.extend(marker.getPosition());
+                    }
+                });
+
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds);
+                     // Add a listener for idle to zoom out if map is too zoomed in after fitBounds
+                    google.maps.event.addListenerOnce(map, 'idle', function(){
+                        if (map.getZoom() > 16) map.setZoom(16);
+                        if (listingsData.length === 1 && map.getZoom() > 14) map.setZoom(14);
+                    });
+                } else {
+                    // Default view if no valid listings with coordinates
+                    map.setCenter({ lat: 34.0522, lng: -118.2437 });
+                    map.setZoom(10);
+                }
+            } else {
+                // Default view if no listings at all
+                map.setCenter({ lat: 34.0522, lng: -118.2437 });
+                map.setZoom(10);
+            }
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&callback=initMap">
+    </script>
 </body>
 </html> 
