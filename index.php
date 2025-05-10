@@ -4,100 +4,35 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
+require_once("config/db.php");
 
+// Fetch recent listings from database
+try {
+    $query = "SELECT l.*, 
+              (SELECT photo_url FROM ListingPhoto WHERE listing_id = l.listing_id ORDER BY photo_order LIMIT 1) as image_url
+              FROM Listing l 
+              WHERE l.status = 'Available'
+              ORDER BY l.created_at DESC 
+              LIMIT 6";
+    
+    $result = $db->query($query);
+    $listings = $result->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Debug output
+    if (empty($listings)) {
+        echo "<!-- No listings found in database -->";
+    }
+} catch (PDOException $e) {
+    // Show error for debugging
+    echo "<!-- Database Error: " . htmlspecialchars($e->getMessage()) . " -->";
+    $listings = [];
+}
 
 // if (isset($_SESSION['user_email'])) {
 //     header("Location: dashboard.php");
 //     exit();
 // }
 
-
-$listings = [
-    [
-        'id' => 1,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Harpers Ferry, West Virginia',
-        'distance' => '1.2 miles away',
-        'price' => '$1,850 month'
-    ],
-    [
-        'id' => 2,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Charles Town, West Virginia',
-        'distance' => '3.5 miles away',
-        'price' => '$1,650 month'
-    ],
-    [
-        'id' => 3,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Shepherdstown, West Virginia',
-        'distance' => '5.8 miles away',
-        'price' => '$1,750 month'
-    ],
-    [
-        'id' => 4,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Martinsburg, West Virginia',
-        'distance' => '10.1 miles away',
-        'price' => '$1,500 month'
-    ],
-    [
-        'id' => 5,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Bolivar, West Virginia',
-        'distance' => '2.0 miles away',
-        'price' => '$1,900 month'
-    ],
-    [
-        'id' => 6,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Ranson, West Virginia',
-        'distance' => '4.2 miles away',
-        'price' => '$1,550 month'
-    ],
-    [
-        'id' => 7,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Kearneysville, West Virginia',
-        'distance' => '8.5 miles away',
-        'price' => '$1,450 month'
-    ],
-    [
-        'id' => 8,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Inwood, West Virginia',
-        'distance' => '12.3 miles away',
-        'price' => '$1,400 month'
-    ],
-    [
-        'id' => 9,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Falling Waters, West Virginia',
-        'distance' => '15.0 miles away',
-        'price' => '$1,600 month'
-    ],
-    [
-        'id' => 10,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Berkeley Springs, West Virginia',
-        'distance' => '25.2 miles away',
-        'price' => '$1,350 month'
-    ],
-    [
-        'id' => 11,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Hedgesville, West Virginia',
-        'distance' => '18.7 miles away',
-        'price' => '$1,520 month'
-    ],
-    [
-        'id' => 12,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Bunker Hill, West Virginia',
-        'distance' => '14.1 miles away',
-        'price' => '$1,480 month'
-    ]
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -251,20 +186,18 @@ $listings = [
                 
                 <div class="listings-inner-container">
                     <?php 
-                        $limited_listings = array_slice($listings, 0, 6); // Display only the first 6 listings
-                        foreach ($limited_listings as $listing): 
+                        foreach ($listings as $listing): 
                     ?>
-                        <a href="listing.php?id=<?php echo htmlspecialchars($listing['id']); ?>" class="listing-card-link">
+                        <a href="listing.php?id=<?php echo htmlspecialchars($listing['listing_id']); ?>" class="listing-card-link">
                             <div class="listing-item">
                                 <div class="listing-image">
-                                    <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
-                                         alt="Property in <?php echo htmlspecialchars($listing['location']); ?>"
+                                    <img src="<?php echo htmlspecialchars($listing['image_url'] ?? 'assets/images/apartment-placeholder.jpg'); ?>" 
+                                         alt="Property in <?php echo htmlspecialchars($listing['city'] . ', ' . $listing['state']); ?>"
                                          loading="lazy">
                                 </div>
                                 <div class="listing-details">
-                                    <div class="listing-location"><?php echo htmlspecialchars($listing['location']); ?></div>
-                                    <div class="listing-distance"><?php echo htmlspecialchars($listing['distance']); ?></div>
-                                    <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                                    <div class="listing-location"><?php echo htmlspecialchars($listing['city'] . ', ' . $listing['state']); ?></div>
+                                    <div class="listing-price">$<?php echo number_format($listing['price']); ?> night</div>
                                 </div>
                             </div>
                         </a>
