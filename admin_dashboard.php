@@ -47,28 +47,23 @@ $reported_accounts = [];
 $listings = [];
 
 if ($role === 'Administrator') {
-    // Get search and filter parameters
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
     
-    // Base query
     $query = "SELECT realtor_id, name, email, phone_number, verification_status FROM Realtor WHERE 1=1";
     $params = [];
     
-    // Add search condition if search term exists
     if (!empty($search)) {
         $query .= " AND (name LIKE ? OR email LIKE ? OR phone_number LIKE ?)";
         $search_param = "%$search%";
         $params = array_merge($params, [$search_param, $search_param, $search_param]);
     }
     
-    // Add status filter if not 'all'
     if ($status_filter !== 'all') {
         $query .= " AND verification_status = ?";
         $params[] = $status_filter;
     }
     
-    // Add ordering
     $query .= " ORDER BY 
         CASE 
             WHEN verification_status = 'Pending' THEN 1
@@ -77,12 +72,10 @@ if ($role === 'Administrator') {
         END,
         name ASC";
     
-    // Prepare and execute the query
     $stmt = $db->prepare($query);
     $stmt->execute($params);
     $pending_realtors = $stmt->fetchAll();
     
-    // Get reported accounts
     $reported_accounts = $db->query("SELECT report_id, realtor_id, description, strikes FROM ReportedAccount ORDER BY created_at DESC")->fetchAll();
 }
 
@@ -101,14 +94,11 @@ if ($role === 'Moderator') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <!-- Google Fonts - Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Basic Reset and Font */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Montserrat", sans-serif;
@@ -118,7 +108,6 @@ if ($role === 'Moderator') {
         }
         a { text-decoration: none; color: inherit; }
 
-        /* Navbar */
         .navbar {
             background-color: #ffffff;
             padding: 0 20px;
@@ -160,7 +149,6 @@ if ($role === 'Moderator') {
             border-radius: 4px;
         }
 
-        /* Main Content Area */
         .main-content {
             flex-grow: 1;
             overflow-y: auto;
@@ -169,7 +157,6 @@ if ($role === 'Moderator') {
             min-height: 100vh;
         }
 
-        /* Page Title */
         .page-title {
             padding: 0;
             padding-top: 25px;
@@ -180,7 +167,6 @@ if ($role === 'Moderator') {
             margin-bottom: 15px;
         }
 
-        /* Filter/Action Area */
         .filter-area {
             padding: 25px 0;
             background-color: #ffffff;
@@ -213,7 +199,6 @@ if ($role === 'Moderator') {
             outline: none;
         }
 
-        /* Search Bar specific styling */
         .search-bar-wrapper {
             display: flex;
             flex-basis: 60%;
@@ -250,7 +235,6 @@ if ($role === 'Moderator') {
             color: #e65c00;
         }
 
-        /* Table Styles */
         .property-table {
             width: 100%;
             border-collapse: collapse;
@@ -283,7 +267,6 @@ if ($role === 'Moderator') {
             background-color: #f9f9f9;
         }
 
-        /* Status Display */
         .status-display {
             display: flex;
             align-items: center;
@@ -300,7 +283,6 @@ if ($role === 'Moderator') {
         .circle-red { background-color: #dc3545; }
         .circle-grey { background-color: #adb5bd; }
 
-        /* Action Buttons */
         .action-cell {
             text-align: center;
         }
@@ -344,7 +326,6 @@ if ($role === 'Moderator') {
             text-align: center;
         }
 
-        /* Welcome Header */
         .welcome-header {
             padding-bottom: 15px;
             margin-bottom: 15px;
@@ -355,7 +336,6 @@ if ($role === 'Moderator') {
             color: #333;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .main-content { 
                 padding: 70px 20px 30px;
@@ -378,7 +358,6 @@ if ($role === 'Moderator') {
             }
         }
 
-        /* Action Buttons Layout */
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -411,7 +390,6 @@ if ($role === 'Moderator') {
             text-transform: uppercase;
         }
 
-        /* Update existing button styles */
         .btn-approve {
             background-color: #28a745;
             color: white;
@@ -430,7 +408,6 @@ if ($role === 'Moderator') {
             background-color: #c82333;
         }
 
-        /* Search Form Styles */
         .search-form {
             display: flex;
             gap: 15px;
@@ -445,12 +422,10 @@ if ($role === 'Moderator') {
             min-width: 150px;
         }
 
-        /* Add hover effect to select */
         .filter-select:hover {
             border-color: #999;
         }
 
-        /* Add focus effect to select */
         .filter-select:focus {
             border-color: #ff6600;
             outline: none;
@@ -465,7 +440,7 @@ if ($role === 'Moderator') {
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Navbar -->
+     
         <header class="navbar">
             <div class="navbar-left">
             </div>
@@ -475,15 +450,15 @@ if ($role === 'Moderator') {
             </div>
         </header>
 
-        <!-- Main Content -->
+      
         <main class="main-content">
-            <!-- Welcome Header -->
+          
             <div class="welcome-header">
                 <h1>Welcome, <?php echo htmlspecialchars($name); ?>!</h1>
             </div>
 
             <?php if ($role === 'Administrator'): ?>
-                <!-- Pending Realtors Section -->
+             
                 <h2 class="page-title">Pending Realtor Verifications</h2>
                 <section class="filter-area">
                     <div class="filter-controls">
@@ -550,7 +525,7 @@ if ($role === 'Moderator') {
                     </table>
                 </section>
 
-                <!-- Reported Accounts Section -->
+              
                 <h2 class="page-title" style="margin-top: 40px;">Reported Accounts</h2>
                 <section class="property-list">
                     <table class="property-table">
@@ -581,7 +556,7 @@ if ($role === 'Moderator') {
                 </section>
 
             <?php elseif ($role === 'Moderator'): ?>
-                <!-- Moderator View -->
+            
                 <h2 class="page-title">Reported Listings</h2>
                 <section class="filter-area">
                     <div class="filter-controls">
