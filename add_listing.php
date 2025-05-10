@@ -69,13 +69,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Add uploaded photos
-        if (!empty($_POST['photo_urls'])) {
-            $photo_urls = explode(',', $_POST['photo_urls']);
-            foreach ($photo_urls as $key => $photo_url) {
-                $db->query("INSERT INTO ListingPhoto (listing_id, photo_url, photo_order) VALUES ($listing_id, '$photo_url', " . ($key + 1) . ")");
+        // --- NEW: Handle file uploads --- 
+        if (isset($_FILES['photos'])) {
+            $upload_dir = 'uploads/listing_images/';
+            // Ensure upload directory exists and is writable (important!)
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            $photo_order = 1;
+            foreach ($_FILES['photos']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['photos']['error'][$key] === UPLOAD_ERR_OK) {
+                    $file_name = $_FILES['photos']['name'][$key];
+                    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                    $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+
+                    if (in_array($file_ext, $allowed_exts)) {
+                        // Sanitize filename and create a unique name
+                        $safe_file_name = preg_replace("/[^a-zA-Z0-9._-]/", "", basename($file_name));
+                        $unique_file_name = uniqid('img_', true) . '-' . $safe_file_name;
+                        $destination = $upload_dir . $unique_file_name;
+
+                        if (move_uploaded_file($tmp_name, $destination)) {
+                            // Insert photo path into database
+                            $stmt = $db->prepare("INSERT INTO ListingPhoto (listing_id, photo_url, photo_order) VALUES (?, ?, ?)");
+                            $stmt->execute([$listing_id, $destination, $photo_order]);
+                            $photo_order++;
+                        } else {
+                            // Handle move_uploaded_file error - log or add to an error array
+                            error_log("Failed to move uploaded file: " . $file_name);
+                        }
+                    } else {
+                        // Handle invalid file type - log or add to an error array
+                        error_log("Invalid file type: " . $file_name);
+                    }
+                } else {
+                    // Handle upload error - log or add to an error array
+                    error_log("Upload error for file " . ($_FILES['photos']['name'][$key] ?? 'unknown') . ": " . $_FILES['photos']['error'][$key]);
+                }
             }
         }
+        // --- END: Handle file uploads ---
 
         $db->commit();
         header("Location: listing.php?id=" . $listing_id);
@@ -86,249 +120,540 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Add Listing</title>
-  <link rel="stylesheet" href="assets/css/add_listing.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Property Listing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/lucide-react.min.js"> --> <!-- Lucide is used via JS below -->
 
-  <!-- Add Cloudinary Upload Widget -->
-  <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+    <!-- REMOVED Cloudinary Upload Widget -->
+    <!-- <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> -->
   
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"
-    defer
-  ></script>
+    <!-- Add Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places" defer></script>
+
+    <style>
+        /* Styles for header from listing.css - Global * and body initially omitted */
+        /* body {
+          font-family: "Montserrat", sans-serif; 
+          color: #333; 
+          background-color: white; 
+        } */
+
+        .header {
+          display: flex;
+          align-items: center;
+          padding: 0 20px;
+          height: 80px;
+          background-color: white; 
+          width: 100%;
+          border-bottom: 1px solid #eee;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+
+        .search-bar-container {
+          display: flex;
+          max-width: 480px;
+          width: 30%;
+          background-color: white;
+          border-radius: 50px;
+          overflow: hidden;
+          height: 44px;
+          border: 1px solid #ddd;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .search-input {
+          flex-grow: 1;
+          border: none;
+          padding: 0 20px;
+          font-size: 0.9rem;
+          outline: none;
+          color: #333; 
+          height: 100%;
+          background-color: white;
+        }
+
+        .search-input::placeholder {
+          color: #888;
+        }
+
+        .search-button {
+          background-color: white;
+          color: #ff6600;
+          border: none;
+          padding: 0 20px;
+          height: 100%;
+          border-radius: 0 50px 50px 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          transition: color 0.2s ease;
+        }
+
+        .search-button:hover {
+          background-color: #f8f8f8;
+          color: #e65c00;
+        }
+
+        .header-links {
+          display: flex;
+          gap: 25px;
+          align-items: center;
+          margin-left: auto;
+        }
+
+        .header-link {
+          color: #333;
+          text-decoration: none;
+          font-weight: 500;
+          font-size: 0.95rem;
+          padding: 8px 12px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+        
+        .custom-checkbox {
+          appearance: none;
+          -webkit-appearance: none;
+          width: 20px;
+          height: 20px;
+          border: 2px solid #d1d5db;
+          border-radius: 50%;
+          position: relative;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        
+        .custom-checkbox:checked {
+          background-color: #ea580c;
+          border-color: #ea580c;
+        }
+        
+        .custom-checkbox:checked::after {
+          content: '×';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-size: 16px;
+          font-weight: bold;
+        }
+
+        /* Lucide Icons basic styling (actual icons are SVG) */
+        .lucide {
+            display: inline-block;
+            vertical-align: middle;
+            stroke-width: 2;
+            fill: none;
+            stroke: currentColor;
+        }
+
+        .cta-button {
+          width: 100%;
+          background-color: #ff6600;
+          color: white;
+          border: none;
+          padding: 14px;
+          font-size: 1rem;
+          font-weight: 600;
+          border-radius: 8px;
+          cursor: pointer;
+          text-align: center;
+          transition: background-color 0.2s ease;
+        }
+
+        .cta-button:hover {
+          background-color: #e65c00;
+        }
+
+        .custom-orange-button {
+          background-color: #fb923c; /* Tailwind orange-400 */
+        }
+        .custom-orange-button:hover {
+          background-color: #f97316; /* Tailwind orange-500 for hover */
+        }
+
+        .force-square-shape {
+            aspect-ratio: 1 / 1 !important;
+            height: auto !important; /* Attempt to override any fixed height */
+        }
+    </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Add New Listing</h2>
+    <div class="min-h-screen bg-white" style="font-family: 'Montserrat', sans-serif;">
+      <!-- Header from listing.php -->
+      <header class="header">
+        <div class="search-bar-container">
+            <input
+                class="search-input"
+                type="text"
+                placeholder="Enter an address, neighborhood, city, or ZIP code"
+                aria-label="Search for properties"
+            >
+            <button class="search-button" aria-label="Submit search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="header-links">
+            <a href="#" class="header-link">Manage Rentals</a>
+            <a href="#" class="header-link">Sign In</a>
+            <a href="#" class="header-link">Add Property</a>
+        </div>
+    </header>
+
+      <!-- Main Content -->
+      <main class="max-w-5xl mx-auto px-6 py-8" style="position: relative; z-index: 1;">
+        <form method="POST" id="add-listing-form" enctype="multipart/form-data">
+          <div class="space-y-8">
+            <!-- Title Section -->
+            <div>
+              <h1 class="text-3xl font-semibold text-gray-900 mb-2">Create Your Property Listing</h1>
+              <p class="text-gray-600">Add details about your property to start hosting</p>
+            </div>
+            
+            <div class="bg-white">
+              <!-- Property Information -->
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Property Title
+                  </label>
+                  <input
+                    type="text"
+                    class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="e.g., Luxury Downtown Loft with Mountain Views"
+                    name="title" id="title" required
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Property Description
+                  </label>
+                  <textarea
+                    rows="6"
+                    class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Describe your property, its features, and what makes it special..."
+                    name="description" id="description" required
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Start typing an address..." 
+                    name="street_address" id="street_address" autocomplete="off" required
+                  />
+                  <input type="hidden" name="city" id="city">
+                  <input type="hidden" name="state" id="state">
+                  <input type="hidden" name="zip_code" id="zip_code">
+                  <input type="hidden" name="country" id="country">
+                  <input type="hidden" name="latitude" id="latitude">
+                  <input type="hidden" name="longitude" id="longitude">
+                </div>
+              </div>
+
+              <!-- Property Details -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Property Type
+                  </label>
+                  <select name="property_type" id="property_type" required class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select a property type</option>
+                    <option value="Apartment">Apartment</option>
+                    <option value="House">House</option>
+                    <option value="Condo">Condo</option>
+                    <option value="Townhouse">Townhouse</option>
+                    <option value="Studio">Studio</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Price per Night ($)
+                  </label>
+                  <input
+                    type="number"
+                    class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="150"
+                    name="price" id="price" step="0.01" required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Guests
+                  </label>
+                  <input
+                    type="number"
+                    class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="2"
+                    name="max_guests" id="max_guests" required
+                  />
+                </div>
+              </div>
+
+              <!-- Property Features -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Bedrooms
+                    </label>
+                    <input
+                      type="number"
+                      class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., 3"
+                      name="bedrooms" id="bedrooms" required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Bathrooms
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., 2.5"
+                      name="bathrooms" id="bathrooms" required
+                    />
+                  </div>
+              </div>
+              
+              <!-- Amenities Section -->
+              <div class="pt-8">
+                <label class="block text-lg font-semibold text-gray-900 mb-4">
+                  Amenities
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+                  <?php
+                    if (isset($db)) { // Check if $db is available
+                      $amenities_stmt = $db->query("SELECT amenity_id, name FROM Amenities ORDER BY name");
+                      while ($amenity = $amenities_stmt->fetch(PDO::FETCH_ASSOC)) {
+                          echo '<div class="flex items-center">';
+                          echo '<input type="checkbox" id="amenity_' . htmlspecialchars($amenity['amenity_id']) . '" name="amenities[]" value="' . htmlspecialchars($amenity['amenity_id']) . '" class="custom-checkbox mr-3">';
+                          echo '<label for="amenity_' . htmlspecialchars($amenity['amenity_id']) . '" class="text-sm text-gray-700">'. htmlspecialchars($amenity['name']) .'</label>';
+                          echo '</div>';
+                      }
+                    } else {
+                      echo '<p class="text-red-500">Error: Database connection not available for amenities.</p>';
+                    }
+                  ?>
+                </div>
+              </div>
+
+              <!-- Photo Upload Section -->
+              <div class="pt-8">
+                <label class="block text-lg font-semibold text-gray-900 mb-4">
+                  Upload Photos
+                </label>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <label for="photos" class="mt-2 text-sm text-gray-600 block">
+                    Drag and drop your photos here, or 
+                    <span class="font-medium text-orange-600 hover:text-orange-500 focus:outline-none cursor-pointer">
+                      browse to upload
+                    </span>
+                  </label>
+                  <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="hidden">
+                  <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB (Max 5 files recommended)</p>
+                   <!-- Container for photo previews -->
+                  <div id="photo-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      <!-- Photo previews will be dynamically inserted here by Cloudinary JS -->
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Map Placeholder -->
+              <div class="pt-8">
+                  <label class="block text-lg font-semibold text-gray-900 mb-4">Property Location on Map</label>
+                  <div id="map-add" style="height: 400px; border-radius: 8px;" class="border border-gray-300">
+                      <!-- Map will be initialized here by Google Maps JS -->
+                  </div>
+              </div>
+
+
+              <!-- Submit Button -->
+              <div class="pt-10 text-right">
+                <button type="submit" class="cta-button">
+                  Create Listing
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
     
-    <form method="POST" id="add-listing-form">
-      <div class="form-group">
-        <label for="title">Title</label>
-        <input type="text" id="title" name="title" required>
-      </div>
+    <script>
+      let map, marker, autocomplete;
+      function initMapAndAutocomplete() {
+        const defaultCenter = { lat: 40.0, lng: -75.0 }; // You might want to set a more relevant default
+        map = new google.maps.Map(document.getElementById('map-add'), {
+            center: defaultCenter,
+            zoom: 12
+        });
+        marker = new google.maps.Marker({
+            position: defaultCenter,
+            map,
+            draggable: true
+        });
+        
+        marker.addListener('dragend', () => {
+            const pos = marker.getPosition();
+            if (pos) {
+                document.getElementById('latitude').value  = pos.lat().toFixed(6);
+                document.getElementById('longitude').value = pos.lng().toFixed(6);
+            }
+        });
 
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="4" required></textarea>
-      </div>
+        const streetInput = document.getElementById('street_address');
+        if (streetInput) {
+            autocomplete = new google.maps.places.Autocomplete(streetInput, {
+                types: ['geocode']
+            });
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry || !place.geometry.location) return;
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="price">Price ($)</label>
-          <input type="number" id="price" name="price" step="0.01" required>
-        </div>
+                map.setCenter(place.geometry.location);
+                map.setZoom(15);
+                marker.setPosition(place.geometry.location);
 
-        <div class="form-group">
-          <label for="property_type">Property Type</label>
-          <select id="property_type" name="property_type" required>
-            <option value="">Select a property type</option>
-            <option value="Apartment">Apartment</option>
-            <option value="House">House</option>
-            <option value="Condo">Condo</option>
-          </select>
-        </div>
-      </div>
+                document.getElementById('latitude').value  = place.geometry.location.lat().toFixed(6);
+                document.getElementById('longitude').value = place.geometry.location.lng().toFixed(6);
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="bedrooms">Bedrooms</label>
-          <input type="number" id="bedrooms" name="bedrooms" required>
-        </div>
+                const comps = place.address_components;
+                function getComp(type) {
+                    const c = comps ? comps.find(c => c.types.includes(type)) : null;
+                    return c ? c.long_name : '';
+                }
+                document.getElementById('city').value      = getComp('locality');
+                document.getElementById('state').value     = getComp('administrative_area_level_1');
+                document.getElementById('zip_code').value  = getComp('postal_code');
+                document.getElementById('country').value   = getComp('country');
+            });
+        } else {
+            console.error('Street address input not found for autocomplete.');
+        }
+      }
 
-        <div class="form-group">
-          <label for="bathrooms">Bathrooms</label>
-          <input type="number" id="bathrooms" name="bathrooms" step="0.5" required>
-        </div>
-      </div>
+      // --- REMOVE Cloudinary Upload Widget Configuration and related code --- 
+      // const cloudName = "daeqajxe0"; 
+      // const uploadPreset = "roofshare";
+      // if (typeof cloudinary !== 'undefined') { ... } else { console.error('Cloudinary library not loaded.'); }
+      // --- END REMOVE Cloudinary --- 
 
-      <div class="form-group">
-        <label for="max_guests">Max Guests</label>
-        <input type="number" id="max_guests" name="max_guests" required>
-      </div>
+      // --- ADD JavaScript for local file preview --- 
+      const photoInput = document.getElementById('photos');
+      const previewContainer = document.getElementById('photo-preview');
+      let selectedFiles = []; // To keep track of files if we want to implement more complex removal
 
-      <div class="form-group">
-        <label for="street_address">Street Address</label>
-        <input 
-          type="text" 
-          id="street_address" 
-          name="street_address" 
-          placeholder="Start typing an address..." 
-          autocomplete="off" 
-          required
-        >
-      </div>
+      if (photoInput && previewContainer) {
+        photoInput.addEventListener('change', function(event) {
+          previewContainer.innerHTML = ''; // Clear existing previews
+          selectedFiles = Array.from(event.target.files); // Store the FileList
+          let fileCount = 0;
 
-      <input type="hidden" name="city" id="city">
-      <input type="hidden" name="state" id="state">
-      <input type="hidden" name="zip_code" id="zip_code">
-      <input type="hidden" name="country" id="country">
-      <input type="hidden" name="latitude" id="latitude">
-      <input type="hidden" name="longitude" id="longitude">
-      
-      <div id="map-add"></div>
+          for (const file of selectedFiles) {
+            if (fileCount >= 5) { // Limit previews if desired, matching text "Max 5 files recommended"
+                alert('You can select a maximum of 5 images for preview. The first 5 will be shown.');
+                break;
+            }
+            if (!file.type.startsWith('image/')){
+                alert(`File ${file.name} is not an image and will not be previewed or uploaded.`);
+                continue; 
+            }
 
-      <div class="form-group">
-        <label for="photos">Photos</label>
-        <div class="photo-upload-container">
-          <button type="button" id="upload_widget" class="cloudinary-button">Upload Photos</button>
-          <div id="photo-preview" class="photo-preview"></div>
-          <input type="hidden" name="photo_urls" id="photo_urls">
-        </div>
-      </div>
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const div = document.createElement('div');
+              div.className = 'relative force-square-shape';
+              
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.alt = file.name;
+              img.className = 'absolute inset-0 w-full h-full object-cover rounded-md';
+              
+              const removeBtn = document.createElement('button');
+              removeBtn.innerHTML = '&times;';
+              removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 leading-none text-xs w-5 h-5 flex items-center justify-center';
+              removeBtn.type = 'button';
+              
+              // Store the file reference with the preview for removal
+              div.dataset.fileName = file.name; 
 
-      <div class="form-group">
-        <label>Amenities</label>
-        <div class="amenities-grid">
-          <?php
-          $amenities_stmt = $db->query("SELECT * FROM Amenities ORDER BY name");
-          while ($amenity = $amenities_stmt->fetch(PDO::FETCH_ASSOC)) {
-            echo '<div class="amenity-item">';
-            echo '<input type="checkbox" id="amenity_' . $amenity['amenity_id'] . '" name="amenities[]" value="' . $amenity['amenity_id'] . '">';
-            echo '<label for="amenity_' . $amenity['amenity_id'] . '">';
-            echo '<span class="amenity-icon">' . $amenity['icon'] . '</span>';
-            echo $amenity['name'];
-            echo '</label>';
-            echo '</div>';
+              removeBtn.onclick = () => {
+                div.remove();
+                // This only removes the preview. 
+                // To prevent upload, we'd need to filter `selectedFiles` or clear and re-select.
+                // For simplicity now, it just removes preview. User needs to re-select if they want to exclude a file after selection.
+                // Or, we can filter `selectedFiles` and re-assign to a new FileList (which is complex).
+                // A simpler approach for actual filtering is to tell user to re-select.
+                // Or, on submit, filter the DataTransfer object if using that.
+                // For now: removing preview only.
+              };
+              
+              div.appendChild(img);
+              div.appendChild(removeBtn);
+              previewContainer.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+            fileCount++;
           }
-          ?>
-        </div>
-      </div>
-
-      <input type="submit" value="Add Listing">
-    </form>
-  </div>
-
-  <script>
-    let map, marker, autocomplete;
-    function initMapAndAutocomplete() {
-      const defaultCenter = { lat: 40.0, lng: -75.0 };
-      map = new google.maps.Map(document.getElementById('map-add'), {
-          center: defaultCenter,
-        zoom: 12
-      });
-      marker = new google.maps.Marker({
-          position: defaultCenter,
-        map,
-        draggable: true
-    });
-    
-    // update hidden lat/lng when marker is dragged
-    marker.addListener('dragend', () => {
-        const pos = marker.getPosition();
-        document.getElementById('latitude').value  = pos.lat().toFixed(6);
-        document.getElementById('longitude').value = pos.lng().toFixed(6);
-      });
-
-      // Places Autocomplete on street_address
-      const input = document.getElementById('street_address');
-      autocomplete = new google.maps.places.Autocomplete(input, {
-        types: ['geocode']
-      });
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry) return;
-
-        // move map & marker
-        map.setCenter(place.geometry.location);
-        map.setZoom(15);
-        marker.setPosition(place.geometry.location);
-
-        // fill lat/lng
-        document.getElementById('latitude').value  = place.geometry.location.lat().toFixed(6);
-        document.getElementById('longitude').value = place.geometry.location.lng().toFixed(6);
-
-        // optional: parse address components
-        const comps = place.address_components;
-        function getComp(type) {
-          const c = comps.find(c => c.types.includes(type));
-          return c ? c.long_name : '';
-        }
-        document.getElementById('city').value      = getComp('locality');
-        document.getElementById('state').value     = getComp('administrative_area_level_1');
-        document.getElementById('zip_code').value  = getComp('postal_code');
-        document.getElementById('country').value   = getComp('country');
-    });
-    }
-
-    // Cloudinary Upload Widget Configuration
-    const cloudName = "daeqajxe0";
-    const uploadPreset = "roofshare"; // Simpler preset name
-
-    const myWidget = cloudinary.createUploadWidget(
-      {
-        cloudName: cloudName,
-        uploadPreset: uploadPreset,
-        sources: ['local'],
-        multiple: true,
-        maxFiles: 5,
-        resourceType: 'image',
-        clientAllowedFormats: ['jpg', 'jpeg', 'png'],
-        maxFileSize: 2000000,
-        showAdvancedOptions: false
-      },
-      (error, result) => {
-        console.log('Upload result:', result); // Debug log
-        console.log('Upload error:', error);   // Debug log
-        
-        if (error) {
-          console.error('Upload error details:', error);
-          alert('Error uploading image. Please try again.');
-          return;
-        }
-        
-        if (result && result.event === "success") {
-          console.log('Upload successful:', result.info); // Debug log
-          
-          // Get the uploaded image URL
-          const imageUrl = result.info.secure_url;
-          
-          // Add to preview
-          const preview = document.getElementById('photo-preview');
-          const div = document.createElement('div');
-          div.className = 'preview-item';
-          div.innerHTML = `
-            <img src="${imageUrl}" alt="Preview">
-            <span class="preview-number">#${preview.children.length + 1}</span>
-          `;
-          preview.appendChild(div);
-
-          // Store URLs in hidden input
-          const photoUrls = document.getElementById('photo_urls');
-          const currentUrls = photoUrls.value ? photoUrls.value.split(',') : [];
-          currentUrls.push(imageUrl);
-          photoUrls.value = currentUrls.join(',');
-        }
+        });
+      } else {
+          if (!photoInput) console.error('Photo input #photos not found.');
+          if (!previewContainer) console.error('Photo preview container #photo-preview not found.');
       }
-    );
+      // --- END JavaScript for local file preview ---
 
-    document.getElementById("upload_widget").addEventListener("click", function(e) {
-      e.preventDefault();
-      console.log('Opening upload widget...'); // Debug log
-      myWidget.open();
-    }, false);
-
-    // Prevent form submission on enter key
-    document.getElementById('add-listing-form').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        return false;
+      // Prevent form submission on enter key in most inputs
+      const form = document.getElementById('add-listing-form');
+      if (form) {
+        form.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && e.target.type !== 'textarea') { // Allow enter in textareas
+            e.preventDefault();
+            // return false; // Not strictly necessary with preventDefault
+          }
+        });
       }
-    });
 
-    // wait for the Maps script to load, then init
-    window.addEventListener('load', () => {
-      if (typeof google !== 'undefined') {
-        initMapAndAutocomplete();
-      }
-    });
+      // Wait for the Maps script to load, then init
+      window.addEventListener('load', () => {
+        if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+          initMapAndAutocomplete();
+        } else {
+          console.error('Google Maps API not loaded by window.load.');
+          // Fallback or retry mechanism could be added here
+        }
+      });
     </script>
 </body>
 </html>

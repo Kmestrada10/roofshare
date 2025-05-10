@@ -4,100 +4,35 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
+require_once("config/db.php");
 
+// Fetch recent listings from database
+try {
+    $query = "SELECT l.*, 
+              (SELECT photo_url FROM ListingPhoto WHERE listing_id = l.listing_id ORDER BY photo_order LIMIT 1) as image_url
+              FROM Listing l 
+              WHERE l.status = 'Available'
+              ORDER BY l.created_at DESC 
+              LIMIT 6";
+    
+    $result = $db->query($query);
+    $listings = $result->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Debug output
+    if (empty($listings)) {
+        echo "<!-- No listings found in database -->";
+    }
+} catch (PDOException $e) {
+    // Show error for debugging
+    echo "<!-- Database Error: " . htmlspecialchars($e->getMessage()) . " -->";
+    $listings = [];
+}
 
 // if (isset($_SESSION['user_email'])) {
 //     header("Location: dashboard.php");
 //     exit();
 // }
 
-
-$listings = [
-    [
-        'id' => 1,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Harpers Ferry, West Virginia',
-        'distance' => '1.2 miles away',
-        'price' => '$1,850 month'
-    ],
-    [
-        'id' => 2,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Charles Town, West Virginia',
-        'distance' => '3.5 miles away',
-        'price' => '$1,650 month'
-    ],
-    [
-        'id' => 3,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Shepherdstown, West Virginia',
-        'distance' => '5.8 miles away',
-        'price' => '$1,750 month'
-    ],
-    [
-        'id' => 4,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Martinsburg, West Virginia',
-        'distance' => '10.1 miles away',
-        'price' => '$1,500 month'
-    ],
-    [
-        'id' => 5,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Bolivar, West Virginia',
-        'distance' => '2.0 miles away',
-        'price' => '$1,900 month'
-    ],
-    [
-        'id' => 6,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Ranson, West Virginia',
-        'distance' => '4.2 miles away',
-        'price' => '$1,550 month'
-    ],
-    [
-        'id' => 7,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Kearneysville, West Virginia',
-        'distance' => '8.5 miles away',
-        'price' => '$1,450 month'
-    ],
-    [
-        'id' => 8,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Inwood, West Virginia',
-        'distance' => '12.3 miles away',
-        'price' => '$1,400 month'
-    ],
-    [
-        'id' => 9,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Falling Waters, West Virginia',
-        'distance' => '15.0 miles away',
-        'price' => '$1,600 month'
-    ],
-    [
-        'id' => 10,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Berkeley Springs, West Virginia',
-        'distance' => '25.2 miles away',
-        'price' => '$1,350 month'
-    ],
-    [
-        'id' => 11,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Hedgesville, West Virginia',
-        'distance' => '18.7 miles away',
-        'price' => '$1,520 month'
-    ],
-    [
-        'id' => 12,
-        'image' => 'assets/images/apartment-placeholder.jpg',
-        'location' => 'Bunker Hill, West Virginia',
-        'distance' => '14.1 miles away',
-        'price' => '$1,480 month'
-    ]
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -110,6 +45,9 @@ $listings = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
     
     <!-- Main CSS -->
     <link rel="stylesheet" href="assets/css/landing.css">
@@ -148,9 +86,64 @@ $listings = [
 
         .listings-inner-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             column-gap: 20px;
             row-gap: 40px;
+        }
+
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 8px !important;
+            margin-top: 5px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ddd !important;
+            font-family: 'Montserrat', sans-serif !important;
+            width: 650px !important; /* Decreased width */
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            position: absolute !important;
+        }
+
+        /* Position the container relative to the search bar */
+        .search-bar-container {
+            position: relative !important;
+        }
+
+        /* Remove the previous centering attempt */
+        .pac-container:before {
+            display: none !important;
+        }
+
+        .pac-item {
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            border-top: none !important;
+        }
+
+        .pac-item:first-child {
+            border-top: none !important;
+        }
+
+        .pac-item:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .pac-icon {
+            display: none !important;
+        }
+
+        .pac-item-query {
+            font-size: 0.9rem !important;
+            color: #333 !important;
+        }
+
+        .pac-matched {
+            font-weight: 500 !important;
+        }
+
+        /* Hide "Powered by Google" text */
+        .pac-container:after {
+            display: none !important;
         }
     </style>
 </head>
@@ -159,7 +152,7 @@ $listings = [
         <!-- Auth Navigation (Top Right) -->
         <div class="auth-links">
             <a href="login.php">Log In</a>
-            <a href="register.php">Sign Up</a>
+            <a href="login.php?view=register">Sign Up</a>
         </div>
     </header>
 
@@ -192,18 +185,19 @@ $listings = [
                 <h2 class="listings-heading">Explore Rentals in the Area</h2>
                 
                 <div class="listings-inner-container">
-                    <?php foreach ($listings as $listing): ?>
-                        <a href="listing.php?id=<?php echo htmlspecialchars($listing['id']); ?>" class="listing-card-link">
+                    <?php 
+                        foreach ($listings as $listing): 
+                    ?>
+                        <a href="listing.php?id=<?php echo htmlspecialchars($listing['listing_id']); ?>" class="listing-card-link">
                             <div class="listing-item">
                                 <div class="listing-image">
-                                    <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
-                                         alt="Property in <?php echo htmlspecialchars($listing['location']); ?>"
+                                    <img src="<?php echo htmlspecialchars($listing['image_url'] ?? 'assets/images/apartment-placeholder.jpg'); ?>" 
+                                         alt="Property in <?php echo htmlspecialchars($listing['city'] . ', ' . $listing['state']); ?>"
                                          loading="lazy">
                                 </div>
                                 <div class="listing-details">
-                                    <div class="listing-location"><?php echo htmlspecialchars($listing['location']); ?></div>
-                                    <div class="listing-distance"><?php echo htmlspecialchars($listing['distance']); ?></div>
-                                    <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                                    <div class="listing-location"><?php echo htmlspecialchars($listing['city'] . ', ' . $listing['state']); ?></div>
+                                    <div class="listing-price">$<?php echo number_format($listing['price']); ?> night</div>
                                 </div>
                             </div>
                         </a>
@@ -214,14 +208,54 @@ $listings = [
     </section>
 
     <script>
+        function initAutocomplete() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = new google.maps.places.Autocomplete(searchInput, {
+                types: ['(cities)'],
+                fields: ['geometry', 'name', 'address_components']
+            });
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    // Validate city selection
+                    let isCity = false;
+                    for (const component of place.address_components) {
+                        if (component.types.includes('locality')) {
+                            isCity = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isCity) {
+                        alert('Please select a city, not a state or country');
+                        searchInput.value = '';
+                        return;
+                    }
+
+                    // Store the coordinates for the search
+                    searchInput.dataset.lat = place.geometry.location.lat();
+                    searchInput.dataset.lng = place.geometry.location.lng();
+                }
+            });
+        }
+
         function handleSearch() {
             const searchInput = document.getElementById('searchInput');
-            if (searchInput.value.trim() !== '') {
-                window.location.href = 'login.php?redirect=search&q=' + encodeURIComponent(searchInput.value);
+            const lat = searchInput.dataset.lat;
+            const lng = searchInput.dataset.lng;
+
+            if (searchInput.value.trim() !== '' && lat && lng) {
+                window.location.href = `search_results.php?location=${encodeURIComponent(searchInput.value)}&latitude=${lat}&longitude=${lng}`;
             } else {
-                alert('Please enter a search term');
+                alert('Please select a city from the dropdown');
             }
         }
+
+        // Initialize autocomplete when the page loads
+        window.onload = function() {
+            initAutocomplete();
+        };
     </script>
 </body>
 </html>
