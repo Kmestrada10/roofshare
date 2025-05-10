@@ -28,20 +28,14 @@ try {
     $result = $db->query($query);
     $listings = $result->fetchAll(PDO::FETCH_ASSOC);
     
-    // Debug output
     if (empty($listings)) {
         echo "<!-- No listings found in database -->";
     }
 } catch (PDOException $e) {
-    // Show error for debugging
     echo "<!-- Database Error: " . htmlspecialchars($e->getMessage()) . " -->";
     $listings = [];
 }
 
-// if (isset($_SESSION['user_email'])) {
-//     header("Location: dashboard.php");
-//     exit();
-// }
 
 ?>
 <!DOCTYPE html>
@@ -51,18 +45,14 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Your Perfect Home | RoofShare</title>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
     
-    <!-- Main CSS -->
     <link rel="stylesheet" href="assets/css/landing.css">
     
-    <!-- Auth CSS -->
     <style>
         .header {
             display: flex;
@@ -83,11 +73,7 @@ try {
             border-radius: 4px;
             transition: background-color 0.2s ease;
         }
-        .auth-links a:hover {
-            /* background-color: rgba(0, 0, 0, 0.05); Removed hover background */
-            /* transform: translateY(-2px); Removed transform */
-            /* box-shadow: 0 4px 8px rgba(0,0,0,0.1); Removed box-shadow */
-        }
+        
         .listing-card-link {
             text-decoration: none;
             color: inherit;
@@ -101,7 +87,6 @@ try {
             row-gap: 40px;
         }
 
-        /* Google Places Autocomplete Styling */
         .pac-container {
             border-radius: 8px !important;
             margin-top: 5px !important;
@@ -114,12 +99,10 @@ try {
             position: absolute !important;
         }
 
-        /* Position the container relative to the search bar */
         .search-bar-container {
             position: relative !important;
         }
 
-        /* Remove the previous centering attempt */
         .pac-container:before {
             display: none !important;
         }
@@ -151,7 +134,6 @@ try {
             font-weight: 500 !important;
         }
 
-        /* Hide "Powered by Google" text */
         .pac-container:after {
             display: none !important;
         }
@@ -175,7 +157,6 @@ try {
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero-container">
         <div class="content-wrapper">
             <h1 class="headline">Find it. Tour it. Own it.</h1>
@@ -197,7 +178,6 @@ try {
         </div>
     </section>
 
-    <!-- Listings Section -->
     <section class="listings-section">
         <div class="listings-outer-container">
             <div class="listings-content-wrapper">
@@ -237,7 +217,6 @@ try {
             autocomplete.addListener('place_changed', function() {
                 const place = autocomplete.getPlace();
                 if (place.geometry) {
-                    // Validate city selection
                     let isCity = false;
                     for (const component of place.address_components) {
                         if (component.types.includes('locality')) {
@@ -252,7 +231,6 @@ try {
                         return;
                     }
 
-                    // Store the coordinates for the search
                     searchInput.dataset.lat = place.geometry.location.lat();
                     searchInput.dataset.lng = place.geometry.location.lng();
                 }
@@ -271,7 +249,6 @@ try {
             }
         }
 
-        // Initialize autocomplete when the page loads
         window.onload = function() {
             initAutocomplete();
         };
