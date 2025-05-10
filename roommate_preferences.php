@@ -131,10 +131,20 @@ function checked($array, $value) {
           color: #e65c00;
         }
         .header-links {
-          display: flex;
-          gap: 25px;
-          align-items: center;
-          margin-left: auto;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 20px;
+        }
+        .header-links-left {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+        .header-links-right {
+            display: flex;
+            gap: 25px;
+            align-items: center;
         }
         .header-link {
           color: #333;
@@ -212,9 +222,14 @@ function checked($array, $value) {
                 </button>
             </div>
             <div class="header-links">
-                <a href="#" class="header-link">Manage Rentals</a>
-                <a href="#" class="header-link">Sign In</a>
-                <a href="#" class="header-link">Add Property</a>
+                <div class="header-links-left">
+                    <a href="index.php" class="header-link">Home</a>
+                    <a href="renter_dashboard.php" class="header-link">Bookmarked</a>
+                </div>
+                <div class="header-links-right">
+                    <a href="roommate_matches.php" class="header-link">My Matches</a>
+                    <a href="login.php?logout=1" class="header-link">Logout</a>
+                </div>
             </div>
         </header>
 
