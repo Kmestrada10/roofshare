@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> -->
   
     <!-- Add Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
 
     <style>
         /* Styles for header from listing.css - Global * and body initially omitted */
@@ -248,8 +248,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           left: 50%;
           transform: translate(-50%, -50%);
           color: white;
-          font-size: 16px;
-          font-weight: bold;
         }
 
         /* Lucide Icons basic styling (actual icons are SVG) */
@@ -290,6 +288,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             aspect-ratio: 1 / 1 !important;
             height: auto !important; /* Attempt to override any fixed height */
         }
+
+        /* Google Places Autocomplete Dropdown Styling */
+        .pac-container {
+            border-radius: 8px !important;
+            margin-top: 5px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ddd !important;
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
+        .pac-item {
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            border-top: none !important;
+        }
+
+        .pac-item:first-child {
+            border-top: none !important;
+        }
+
+        .pac-item:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .pac-item-query {
+            font-size: 0.9rem !important;
+            color: #333 !important;
+        }
+
+        .pac-matched {
+            font-weight: 500 !important;
+        }
     </style>
 </head>
 <body>
@@ -298,12 +328,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <header class="header">
         <div class="search-bar-container">
             <input
+                id="searchInput"
                 class="search-input"
                 type="text"
                 placeholder="Enter an address, neighborhood, city, or ZIP code"
                 aria-label="Search for properties"
             >
-            <button class="search-button" aria-label="Submit search">
+            <button class="search-button" onclick="handleSearch()" aria-label="Submit search">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                 </svg>
@@ -654,6 +685,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           // Fallback or retry mechanism could be added here
         }
       });
+    </script>
+    <script>
+        function initAutocomplete() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = new google.maps.places.Autocomplete(searchInput, {
+                types: ['(cities)'],
+                fields: ['geometry', 'name', 'address_components']
+            });
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    // Validate city selection
+                    let isCity = false;
+                    for (const component of place.address_components) {
+                        if (component.types.includes('locality')) {
+                            isCity = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isCity) {
+                        alert('Please select a city, not a state or country');
+                        searchInput.value = '';
+                        return;
+                    }
+
+                    // Store the coordinates for the search
+                    searchInput.dataset.lat = place.geometry.location.lat();
+                    searchInput.dataset.lng = place.geometry.location.lng();
+                }
+            });
+        }
+
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const lat = searchInput.dataset.lat;
+            const lng = searchInput.dataset.lng;
+
+            if (searchInput.value.trim() !== '' && lat && lng) {
+                window.location.href = `search_results.php?location=${encodeURIComponent(searchInput.value)}&latitude=${lat}&longitude=${lng}`;
+            } else {
+                alert('Please select a city from the dropdown');
+            }
+        }
+
+        // Initialize autocomplete when the page loads
+        window.onload = function() {
+            initAutocomplete();
+        };
     </script>
 </body>
 </html>
