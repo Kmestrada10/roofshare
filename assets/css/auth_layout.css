@@ -43,14 +43,14 @@ body, html {
     max-width: 400px; 
     display: flex;
     flex-direction: column;
-    gap: 15px; 
+    gap: 0; 
 }
 
 .auth-form-section label {
     font-weight: 500;
     color: #4A5568; 
-    margin-bottom: -10px; 
-    display: block; /* Ensure label takes full width if needed */
+    margin-bottom: 8px; 
+    display: block;
 }
 
 .auth-form-section input[type="text"],
@@ -63,8 +63,9 @@ body, html {
     border: 1px solid #CBD5E0; 
     border-radius: 6px;
     font-size: 0.95rem;
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    box-sizing: border-box;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 15px;
 }
 
 .auth-form-section input[type="text"]:focus,

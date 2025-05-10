@@ -154,12 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" name="phone_number" placeholder="Phone Number">
 
                 <div class="dynamic admin" style="display:none">
-                    <label for="role">Role</label>
-                    <select name="role" class="admin">
-                        <option value="">Select Role</option>
-                        <option value="Administrator">Administrator</option>
-                        <option value="Moderator">Moderator</option>
-                    </select>
+                    <input type="hidden" name="role" value="Administrator">
                 </div>
 
                 <div class="dynamic renter" style="display:none">

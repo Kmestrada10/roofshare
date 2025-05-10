@@ -569,9 +569,9 @@ if ($role === 'Moderator') {
                                     <td><?php echo htmlspecialchars($report['description']); ?></td>
                                     <td><?php echo htmlspecialchars($report['strikes']); ?></td>
                                     <td class="action-cell">
-                                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this Realtor?');">
+                                        <form method="POST" onsubmit="return confirm('Are you sure you want to ban this Realtor?');">
                                             <input type="hidden" name="remove_realtor_id" value="<?php echo $report['realtor_id']; ?>">
-                                            <button type="submit" class="btn-reject">Delete Realtor</button>
+                                            <button type="submit" class="btn-reject">Ban Realtor</button>
                                         </form>
                                     </td>
                                 </tr>
