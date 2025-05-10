@@ -16,10 +16,6 @@ $stmt->execute([$email]);
 $user = $stmt->fetch();
 $name = $user['name'] ?? 'Renter';
 
-// Default user info if not logged in (for demonstration)
-$user_name = $_SESSION['user_name'] ?? 'temp_account';
-$user_type = $_SESSION['user_type'] ?? 'Renter'; // Changed to Renter type
-
 // Sample bookmarked property data (replace with actual data fetching later)
 $bookmarked_properties = [
     [
@@ -441,7 +437,7 @@ function getDisplayStatusText($status) {
         <main class="main-content">
             <!-- Welcome Header -->
             <div class="welcome-header">
-                <h1>Welcome, <?php echo htmlspecialchars($user_name); ?>!</h1>
+                <h1>Welcome, <?php echo htmlspecialchars($name); ?>!</h1>
             </div>
 
             <!-- Page Title -->

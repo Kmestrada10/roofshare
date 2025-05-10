@@ -24,7 +24,7 @@ if ($type === 'Admin') {
 
 $stmt->execute([$email]);
 $user = $stmt->fetch();
-$name = $user['name'] ?? 'User';
+$name = $user['name'] ?? 'Renter';
 $role = $user['role'] ?? '';
 $verification = $user['verification_status'] ?? '';
 
