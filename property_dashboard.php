@@ -1,11 +1,9 @@
 <?php
 session_start();
 
-// Default user info if not logged in (for demonstration)
 $user_name = $_SESSION['user_name'] ?? 'temp_account';
-$user_type = $_SESSION['user_type'] ?? 'Realtor'; // Example type
+$user_type = $_SESSION['user_type'] ?? 'Realtor';
 
-// Sample property data (replace with actual data fetching later)
 $properties = [
     [
         'id' => 1,
@@ -16,7 +14,7 @@ $properties = [
         'status' => 'Published',
         'price' => '$ 86,000',
         'featured' => true,
-        'image' => 'assets/images/apartment-placeholder.jpg' // Placeholder image
+        'image' => 'assets/images/apartment-placeholder.jpg'
     ],
     [
         'id' => 2,
@@ -35,7 +33,7 @@ $properties = [
         'location' => 'New York, West Side',
         'expires' => '2017-10-15',
         'category' => 'Villas, Sales',
-        'status' => 'Pending', // Different status example
+        'status' => 'Pending',
         'price' => '$ 5,500,000',
         'featured' => false,
         'image' => 'assets/images/apartment-placeholder.jpg'
@@ -46,41 +44,38 @@ $properties = [
         'location' => 'Metropolis, Downtown',
         'expires' => '2024-08-01',
         'category' => 'Studio, Rent',
-        'status' => 'Expired', // Different status example
+        'status' => 'Expired',
         'price' => '$ 1,200 / mo',
         'featured' => false,
         'image' => 'assets/images/apartment-placeholder.jpg'
     ]
 ];
 
-// Function to get status circle CSS class
 function getStatusCircleClass($status) {
     switch (strtolower($status)) {
         case 'published':
             return 'circle-green';
         case 'pending':
             return 'circle-yellow';
-        case 'expired': // Assuming Expired maps to Rejected
+        case 'expired':
             return 'circle-red';
         default:
-            return 'circle-grey'; // Default grey circle
+            return 'circle-grey';
     }
 }
 
-// Function to get display text for status
 function getDisplayStatusText($status) {
     switch (strtolower($status)) {
         case 'published':
             return 'Approved';
         case 'pending':
             return 'Pending';
-        case 'expired': // Assuming Expired maps to Rejected
+        case 'expired':
             return 'Rejected';
         default:
-            return ucfirst(strtolower($status)); // Default: Capitalize the status
+            return ucfirst(strtolower($status));
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -88,44 +83,39 @@ function getDisplayStatusText($status) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Dashboard</title>
-    <!-- Google Fonts - Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Basic Reset and Font */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: "Montserrat", sans-serif; /* Match listing.css */
+            font-family: "Montserrat", sans-serif;
             color: #333;
-            background-color: #f8f9fa; /* Lighter gray background */
+            background-color: #f8f9fa;
         }
         a { text-decoration: none; color: inherit; }
-
-        /* Navbar */
         .navbar {
             background-color: #ffffff;
-            padding: 0 20px; /* Match listing.css */
-            height: 80px; /* Match listing.css */
+            padding: 0 20px;
+            height: 80px;
             display: flex;
-            align-items: center; /* Vertically center items */
+            align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid #e0e0e0;
             position: sticky;
             top: 0;
-            z-index: 100; /* Ensure it's above content */
+            z-index: 100;
         }
         .navbar-left {
             display: flex;
             align-items: center;
-            gap: 30px; /* Space between logo and links */
+            gap: 30px;
         }
         .navbar-logo {
             font-size: 1.5em;
             font-weight: 700;
-            color: #333; /* Changed from orange to dark gray */
+            color: #333;
         }
         .navbar-links ul {
             list-style: none;
@@ -142,78 +132,70 @@ function getDisplayStatusText($status) {
             border-radius: 4px;
             transition: background-color 0.2s ease, color 0.2s ease;
             display: inline-block;
-            font-family: inherit; /* Explicitly inherit font */
+            font-family: inherit;
         }
         .navbar-links .nav-link a:hover {
-             /* Removed orange color on hover */
-             background-color: rgba(0,0,0,0.05); /* Keep subtle background change */
+            background-color: rgba(0,0,0,0.05);
         }
         .navbar-links .nav-link.active a {
             background-color: transparent;
-            color: #333; /* Changed from orange to dark gray */
+            color: #333;
         }
-
         .navbar-right {
             display: flex;
             align-items: center;
-            gap: 20px; /* Adjust gap */
-            margin-left: auto; /* Push to the right */
+            gap: 20px;
+            margin-left: auto;
         }
         .user-menu {
             display: flex;
             align-items: center;
-            gap: 8px; /* Smaller gap */
+            gap: 8px;
         }
         .user-menu .user-icon {
-            width: 36px; /* Slightly larger icon */
+            width: 36px;
             height: 36px;
             border-radius: 50%;
             background-color: #ffe8d6;
-            color: #ff6600; /* Primary orange */
+            color: #ff6600;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
         }
-         .user-menu .user-name {
+        .user-menu .user-name {
             font-weight: 500;
             font-size: 0.9em;
-         }
-         .user-menu .logout-link {
+        }
+        .user-menu .logout-link {
             font-size: 0.9em;
             color: #777;
             margin-left: 5px;
-         }
-         .user-menu .logout-link:hover {
+        }
+        .user-menu .logout-link:hover {
             color: #ff6600;
             text-decoration: underline;
-         }
-
-        /* Main Content Area */
+        }
         .main-content {
             flex-grow: 1;
             overflow-y: auto;
             background-color: #ffffff;
-            padding: 80px 150px 30px; /* Increased L/R padding further */
+            padding: 80px 150px 30px;
         }
-
-        /* Page Title */
         .page-title {
-            padding: 0; /* Removed LR padding, use main-content padding */
+            padding: 0;
             padding-top: 25px;
-            padding-bottom: 0; /* Reset bottom padding */
+            padding-bottom: 0;
             font-size: 1.8em;
-            font-weight: 500; /* Reduced from 600 */
+            font-weight: 500;
             color: #333;
-            margin-bottom: 15px; /* Adjusted margin */
+            margin-bottom: 15px;
         }
-
-        /* Filter/Action Area */
         .filter-area {
-            padding: 25px 0; /* Removed LR padding */
+            padding: 25px 0;
             background-color: #ffffff;
             border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 20px; /* Space before table */
+            margin-bottom: 20px;
         }
         .filter-controls {
             display: flex;
@@ -222,109 +204,98 @@ function getDisplayStatusText($status) {
         }
         .filter-controls input[type="text"],
         .filter-controls select {
-            padding: 16px 15px; /* Increased vertical padding for select */
+            padding: 16px 15px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 0.9em;
             flex-grow: 1;
             background-color: white;
-            height: 54px; /* Match approximate height of padded input */
-            font-family: inherit; /* Ensure font is inherited */
+            height: 54px;
+            font-family: inherit;
         }
         .filter-controls select {
             appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-image: url('data:image/svg+xml,...');
             background-repeat: no-repeat;
             background-position: right 15px center;
             background-size: 10px auto;
-            padding-right: 40px; /* Space for arrow */
+            padding-right: 40px;
             outline: none;
-            font-size: 0.9em;
-            font-family: inherit; /* Ensure font is inherited */
         }
         .filter-controls button {
             padding: 12px 25px;
-            background-color: #ff6600; /* Orange button */
+            background-color: #ff6600;
             color: white;
             border: none;
-            border-radius: 8px; /* Consistent radius */
+            border-radius: 8px;
             font-weight: 600;
             font-size: 0.9em;
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
         .filter-controls button:hover {
-            background-color: #e65c00; /* Darker orange on hover */
+            background-color: #e65c00;
         }
-        .filter-controls .search-input { flex-basis: 40%; }
-        .filter-controls .filter-select { flex-basis: 15%; }
-
-        /* Search Bar specific styling */
         .search-bar-wrapper {
             display: flex;
-            flex-basis: 60%; /* Increased width further */
+            flex-basis: 60%;
             border: 1px solid #ccc;
-            border-radius: 50px; /* Fully rounded */
-            overflow: hidden; /* Clip children */
+            border-radius: 50px;
+            overflow: hidden;
             background-color: white;
         }
         .search-bar-wrapper input[type="text"] {
             flex-grow: 1;
             border: none;
-            padding: 16px 20px; /* Increased vertical padding */
-            border-radius: 0; /* Remove individual radius */
+            padding: 16px 20px;
+            border-radius: 0;
             outline: none;
-            font-size: 0.9em;
-            font-family: inherit; /* Ensure font is inherited */
         }
         .search-bar-wrapper button {
             background-color: white;
-            color: #ff6600; /* Orange icon */
+            color: #ff6600;
             border: none;
-            border-left: 1px solid #eee; /* Subtle separator */
-            padding: 0 20px; /* Adjust padding for icon */
-            border-radius: 0; /* Remove individual radius */
+            border-left: 1px solid #eee;
+            padding: 0 20px;
+            border-radius: 0;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1em; /* Adjust icon size if needed */
+            font-size: 1.1em;
             transition: background-color 0.2s ease, color 0.2s ease;
-            font-family: inherit; /* Ensure font is inherited */
         }
         .search-bar-wrapper button:hover {
             background-color: #f8f8f8;
-            color: #e65c00; /* Darker orange icon */
+            color: #e65c00;
         }
-
-        /* Property List Table */
         .property-list {
-            padding: 0; /* Removed LR padding */
+            padding: 0;
             padding-top: 20px;
         }
         .property-table {
             width: 100%;
             border-collapse: collapse;
-            background-color: #ffffff; /* Ensure white background */
-            border-radius: 0; /* Remove table radius */
+            background-color: #ffffff;
+            border-radius: 0;
             overflow: hidden;
-            box-shadow: none; /* Removed shadow */
+            box-shadow: none;
         }
         .property-table th, .property-table td {
-            padding: 20px 20px; /* Increased padding */
+            padding: 20px 20px;
             text-align: left;
-            border-bottom: 1px solid #e8e8e8; /* Lighter border */
+            border-bottom: 1px solid #e8e8e8;
         }
         .property-table th {
-            background-color: #ffffff; /* Remove header background */
+            background-color: #ffffff;
             font-size: 0.85em;
-            font-weight: 500; /* Lighter header font */
+            font-weight: 500;
             color: #666;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .property-table tr:last-child td {
-            border-bottom: none; /* Remove border on last row */
+            border-bottom: none;
         }
         .property-table td {
             font-size: 0.9em;
@@ -332,18 +303,18 @@ function getDisplayStatusText($status) {
             vertical-align: middle;
         }
         .property-table tbody tr:hover {
-            background-color: #f9f9f9; /* Subtle row hover */
+            background-color: #f9f9f9;
         }
         .property-info { display: flex; align-items: center; gap: 15px; }
         .property-image {
-            width: 120px; height: 90px; /* Increased size */
-            border-radius: 4px; /* Smaller radius for images */
-            object-fit: contain; /* Changed from cover */
+            width: 120px; height: 90px;
+            border-radius: 4px;
+            object-fit: contain;
             position: relative;
-            overflow: hidden; /* Ensure badge stays within bounds */
+            overflow: hidden;
         }
         .property-details .title {
-            font-weight: 500; /* Reduced from 600 */
+            font-weight: 500;
             color: #333;
             margin-bottom: 2px;
         }
@@ -351,28 +322,26 @@ function getDisplayStatusText($status) {
             font-size: 0.85em;
             color: #777;
         }
-         .property-details .expires {
+        .property-details .expires {
             font-size: 0.8em;
             color: #999;
         }
         .status-badge {
             display: inline-block;
             padding: 4px 10px;
-            border-radius: 12px; /* Pill shape */
+            border-radius: 12px;
             font-size: 0.8em;
             font-weight: 500;
             text-transform: capitalize;
         }
-        .status-published { background-color: #d4edda; color: #155724; } /* Greenish */
-        .status-pending { background-color: #fff3cd; color: #856404; } /* Yellowish */
-        .status-expired { background-color: #f8d7da; color: #721c24; } /* Reddish */
-        .status-default { background-color: #e2e3e5; color: #383d41; } /* Gray */
-
-        /* New Status Display Styles */
+        .status-published { background-color: #d4edda; color: #155724; }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-expired { background-color: #f8d7da; color: #721c24; }
+        .status-default { background-color: #e2e3e5; color: #383d41; }
         .status-display {
             display: flex;
             align-items: center;
-            gap: 8px; /* Space between circle and text */
+            gap: 8px;
         }
         .status-circle {
             width: 10px;
@@ -380,114 +349,86 @@ function getDisplayStatusText($status) {
             border-radius: 50%;
             display: inline-block;
         }
-        .circle-green { background-color: #28a745; } /* Green */
-        .circle-yellow { background-color: #ffc107; } /* Yellow */
-        .circle-red { background-color: #dc3545; } /* Red */
-        .circle-grey { background-color: #adb5bd; } /* Grey */
-
+        .circle-green { background-color: #28a745; }
+        .circle-yellow { background-color: #ffc107; }
+        .circle-red { background-color: #dc3545; }
+        .circle-grey { background-color: #adb5bd; }
         .status-text {
-            color: #333; /* Black/dark grey text */
+            color: #333;
             font-size: 0.9em;
         }
-
         .actions {
-            white-space: nowrap; /* Prevent buttons from wrapping */
+            white-space: nowrap;
         }
-
         .action-cell {
-            text-align: center; /* Center buttons in the cell */
+            text-align: center;
         }
-
-        /* Base styles for action buttons in cells */
         .action-cell button {
-             display: inline-block;
-             padding: 8px 15px; /* Base padding before override */
-             color: white; /* Ensure text is white */
-             border: none;
-             font-weight: 500;
-             font-size: 0.85em;
-             cursor: pointer;
-             transition: background-color 0.2s ease;
-             text-decoration: none; /* For link buttons */
-             font-family: inherit; /* Ensure font is inherited */
-             text-transform: uppercase; /* Make text uppercase */
-             text-align: center; /* Center text */
-             min-width: 80px; /* Further reduced minimum width */
-         }
-
-         .btn-view {
-             background-color: #ff6600; /* Orange */
-         }
-         .btn-view:hover {
-            background-color: #e65c00; /* Darker orange */
-         }
-
-         .btn-approve {
-            background-color: #28a745; /* Vibrant Green */
-            padding: 4px 12px; /* Further reduced padding */
-            border-radius: 50px; /* Pill shape */
-         }
-         .btn-approve:hover {
-            background-color: #218838; /* Darker Vibrant Green */
-         }
-
-         .btn-reject {
-             background-color: #dc3545; /* Vibrant Red */
-             padding: 4px 12px; /* Further reduced padding */
-             border-radius: 50px; /* Pill shape */
-         }
-         .btn-reject:hover {
-             background-color: #c82333; /* Darker Vibrant Red */
-         }
-
-         /* Style for table links like View Listing */
-         .property-table td a {
-            color: #333; /* Black/dark grey */
+            display: inline-block;
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            font-weight: 500;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
             text-decoration: none;
-         }
-         .property-table td a:hover {
+            font-family: inherit;
+            text-transform: uppercase;
+            text-align: center;
+            min-width: 80px;
+        }
+        .btn-view { background-color: #ff6600; }
+        .btn-view:hover { background-color: #e65c00; }
+        .btn-approve {
+            background-color: #28a745;
+            padding: 4px 12px;
+            border-radius: 50px;
+        }
+        .btn-approve:hover { background-color: #218838; }
+        .btn-reject {
+            background-color: #dc3545;
+            padding: 4px 12px;
+            border-radius: 50px;
+        }
+        .btn-reject:hover { background-color: #c82333; }
+        .property-table td a {
+            color: #333;
+            text-decoration: none;
+        }
+        .property-table td a:hover {
             text-decoration: underline;
-         }
-
-        /* Responsive Adjustments */
+        }
         @media (max-width: 768px) {
-            /* Remove sidebar related responsive rules if they exist */
-            .main-content { padding-top: 70px; /* Adjust if navbar height changes on mobile */}
+            .main-content { padding-top: 70px; }
             .filter-controls { flex-direction: column; align-items: stretch; }
-            .property-table { display: block; overflow-x: auto; } /* Allow table scroll */
-            .property-table th,
-            .property-table td {
-                 padding: 15px; /* Adjust padding for mobile */
-                 white-space: nowrap; /* Prevent wrapping in table cells */
+            .property-table { display: block; overflow-x: auto; }
+            .property-table th, .property-table td {
+                padding: 15px;
+                white-space: nowrap;
             }
             .page-title {
-                 font-size: 1.6em;
+                font-size: 1.6em;
             }
         }
-
         .action-header {
-            text-align: center; /* Center action headers */
+            text-align: center;
         }
-
-        /* Welcome Header Styling */
         .welcome-header {
-            padding-bottom: 15px; /* Space below welcome */
-            margin-bottom: 15px; /* Space below welcome */
+            padding-bottom: 15px;
+            margin-bottom: 15px;
         }
         .welcome-header h1 {
-            font-size: 2.2em; /* Increased size */
-            font-weight: 500; /* Reduced from 600 */
+            font-size: 2.2em;
+            font-weight: 500;
             color: #333;
         }
-
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Navbar -->
         <header class="navbar">
             <div class="navbar-left">
-                <!-- Logo removed -->
                 <nav class="navbar-links">
                     <ul>
                         <li class="nav-link active"><a href="#">My Properties,</a></li>
@@ -498,30 +439,21 @@ function getDisplayStatusText($status) {
             <div class="navbar-right">
                 <div class="user-menu">
                     <div class="user-icon"><i class="fa fa-user"></i></div>
-                    <a href="#" class="logout-link">(Logout)</a> <!-- Basic Logout Link -->
+                    <a href="#" class="logout-link">(Logout)</a>
                 </div>
             </div>
         </header>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Welcome Header -->
             <div class="welcome-header">
                 <h1>Welcome, <?php echo htmlspecialchars($user_name); ?>!</h1>
             </div>
-
-            <!-- Page Title -->
             <h2 class="page-title">Property List</h2>
-
-            <!-- Filter Area -->
             <section class="filter-area">
                 <div class="filter-controls">
-                    <!-- Search Bar Wrapper -->
                     <div class="search-bar-wrapper">
                         <input type="text" placeholder="Search a listing">
                         <button><i class="fa fa-search"></i></button>
                     </div>
-                    <!-- Filter Selects -->
                     <select class="filter-select">
                         <option>Order By</option>
                         <option>Date Added</option>
@@ -536,8 +468,6 @@ function getDisplayStatusText($status) {
                     </select>
                 </div>
             </section>
-
-            <!-- Property List -->
             <section class="property-list">
                 <table class="property-table">
                     <thead>
@@ -574,17 +504,16 @@ function getDisplayStatusText($status) {
                                     </div>
                                 </td>
                                 <td><?php echo htmlspecialchars($property['price']); ?></td>
-                                <td>
-                                    <a href="#">View Listing</a>
-                                </td>
-                                <td class="action-cell"> <?php /* Accept Column */
+                                <td><a href="#">View Listing</a></td>
+                                <td class="action-cell">
+                                    <?php
                                     $status = strtolower($property['status']);
                                     if ($status === 'pending' || $status === 'expired'): ?>
                                         <button class="btn-approve">Approve</button>
                                     <?php endif; ?>
                                 </td>
-                                <td class="action-cell"> <?php /* Reject Column */
-                                    if ($status === 'pending' || $status === 'published'): ?>
+                                <td class="action-cell">
+                                    <?php if ($status === 'pending' || $status === 'published'): ?>
                                         <button class="btn-reject">Reject</button>
                                     <?php endif; ?>
                                 </td>
@@ -596,4 +525,4 @@ function getDisplayStatusText($status) {
         </main>
     </div>
 </body>
-</html> 
+</html>
