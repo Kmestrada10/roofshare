@@ -6,7 +6,7 @@ require_once("config/db.php");
 session_start();
 
 // Check if user is a realtor
-if (($_SESSION['user_type'] ?? '') !== 'Realtor') {
+if (strtolower($_SESSION['user_type'] ?? '') !== 'realtor') {
     echo "Access denied. Only realtors can add listings.";
     exit;
 }
