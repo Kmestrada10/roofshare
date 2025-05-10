@@ -5,13 +5,13 @@ ini_set('display_errors', 1);
 require_once("config/db.php");
 session_start();
 
-// Check if user is a realtor
+
 if (($_SESSION['user_type'] ?? '') !== 'Realtor') {
     echo "Access denied. Only realtors can add listings.";
     exit;
 }
 
-// Get realtor ID from email
+
 function getRealtorId($db, $email)
 {
     $stmt = $db->prepare("SELECT realtor_id FROM Realtor WHERE email = ?");
@@ -21,9 +21,9 @@ function getRealtorId($db, $email)
 }
 $realtor_id = getRealtorId($db, $_SESSION['user_email']);
 
-// Process form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
+
     $title         = $_POST['title'] ?? '';
     $description   = $_POST['description'] ?? '';
     $price         = $_POST['price'] ?? 0;
@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bedrooms      = $_POST['bedrooms'] ?? 0;
     $bathrooms     = $_POST['bathrooms'] ?? 0;
     $max_guests    = $_POST['max_guests'] ?? 1;
-    $amenities     = $_POST['amenities'] ?? []; // Get selected amenities
+    $amenities     = $_POST['amenities'] ?? []; 
     
-    // Get address data
+  
     $street        = $_POST['street_address'] ?? '';
     $city          = $_POST['city'] ?? '';
     $state         = $_POST['state'] ?? '';
@@ -45,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db->beginTransaction();
 
-        // Insert new listing record
         $query = "INSERT INTO Listing 
             (title, description, price, status,
              property_type, bedrooms, bathrooms,
@@ -62,14 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->query($query);
         $listing_id = $db->lastInsertId();
 
-        // Add selected amenities
+ 
         if (!empty($amenities)) {
             foreach ($amenities as $amenity_id) {
                 $db->query("INSERT INTO ListingAmenities (listing_id, amenity_id) VALUES ($listing_id, $amenity_id)");
             }
         }
 
-        // Add uploaded photos
+        
         if (!empty($_POST['photo_urls'])) {
             $photo_urls = explode(',', $_POST['photo_urls']);
             foreach ($photo_urls as $key => $photo_url) {
@@ -97,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Add Cloudinary Upload Widget -->
+  
   <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
   
   <script
@@ -220,14 +219,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         draggable: true
     });
     
-    // update hidden lat/lng when marker is dragged
+    
     marker.addListener('dragend', () => {
         const pos = marker.getPosition();
         document.getElementById('latitude').value  = pos.lat().toFixed(6);
         document.getElementById('longitude').value = pos.lng().toFixed(6);
       });
 
-      // Places Autocomplete on street_address
+  
       const input = document.getElementById('street_address');
       autocomplete = new google.maps.places.Autocomplete(input, {
         types: ['geocode']
@@ -236,16 +235,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const place = autocomplete.getPlace();
         if (!place.geometry) return;
 
-        // move map & marker
+       
         map.setCenter(place.geometry.location);
         map.setZoom(15);
         marker.setPosition(place.geometry.location);
 
-        // fill lat/lng
+    
         document.getElementById('latitude').value  = place.geometry.location.lat().toFixed(6);
         document.getElementById('longitude').value = place.geometry.location.lng().toFixed(6);
 
-        // optional: parse address components
+
         const comps = place.address_components;
         function getComp(type) {
           const c = comps.find(c => c.types.includes(type));
@@ -258,9 +257,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
     }
 
-    // Cloudinary Upload Widget Configuration
+    
     const cloudName = "daeqajxe0";
-    const uploadPreset = "roofshare"; // Simpler preset name
+    const uploadPreset = "roofshare"; 
 
     const myWidget = cloudinary.createUploadWidget(
       {
@@ -275,8 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         showAdvancedOptions: false
       },
       (error, result) => {
-        console.log('Upload result:', result); // Debug log
-        console.log('Upload error:', error);   // Debug log
+        console.log('Upload result:', result); 
+        console.log('Upload error:', error);   
         
         if (error) {
           console.error('Upload error details:', error);
@@ -285,12 +284,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if (result && result.event === "success") {
-          console.log('Upload successful:', result.info); // Debug log
+          console.log('Upload successful:', result.info); 
           
-          // Get the uploaded image URL
           const imageUrl = result.info.secure_url;
-          
-          // Add to preview
+   
           const preview = document.getElementById('photo-preview');
           const div = document.createElement('div');
           div.className = 'preview-item';
@@ -300,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           `;
           preview.appendChild(div);
 
-          // Store URLs in hidden input
+       
           const photoUrls = document.getElementById('photo_urls');
           const currentUrls = photoUrls.value ? photoUrls.value.split(',') : [];
           currentUrls.push(imageUrl);
@@ -311,11 +308,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     document.getElementById("upload_widget").addEventListener("click", function(e) {
       e.preventDefault();
-      console.log('Opening upload widget...'); // Debug log
+      console.log('Opening upload widget...');
       myWidget.open();
     }, false);
 
-    // Prevent form submission on enter key
+
     document.getElementById('add-listing-form').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -323,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     });
 
-    // wait for the Maps script to load, then init
+   
     window.addEventListener('load', () => {
       if (typeof google !== 'undefined') {
         initMapAndAutocomplete();
