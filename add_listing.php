@@ -53,31 +53,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              state, zip_code, country, latitude,
              longitude, realtor_id)
           VALUES 
-            ('$title', '$description', $price,
-            'Available', '$property_type', $bedrooms, $bathrooms,
-            $max_guests, '$street', '$city', '$state',
-            '$zip', '$country', $latitude, $longitude,
-            $realtor_id)";
+            (?, ?, ?, 'Available', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        $db->query($query);
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            $title,
+            $description,
+            $price,
+            $property_type,
+            $bedrooms,
+            $bathrooms,
+            $max_guests,
+            $street,
+            $city,
+            $state,
+            $zip,
+            $country,
+            $latitude ?: null,
+            $longitude ?: null,
+            $realtor_id
+        ]);
+        
         $listing_id = $db->lastInsertId();
 
         // Add selected amenities
         if (!empty($amenities)) {
+            $amenity_stmt = $db->prepare("INSERT INTO ListingAmenities (listing_id, amenity_id) VALUES (?, ?)");
             foreach ($amenities as $amenity_id) {
-                $db->query("INSERT INTO ListingAmenities (listing_id, amenity_id) VALUES ($listing_id, $amenity_id)");
+                $amenity_stmt->execute([$listing_id, $amenity_id]);
             }
         }
 
-        // --- NEW: Handle file uploads --- 
+        // Handle file uploads
         if (isset($_FILES['photos'])) {
             $upload_dir = 'uploads/listing_images/';
-            // Ensure upload directory exists and is writable (important!)
+            // Ensure upload directory exists and is writable
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
 
             $photo_order = 1;
+            $photo_stmt = $db->prepare("INSERT INTO ListingPhoto (listing_id, photo_url, photo_order) VALUES (?, ?, ?)");
+            
             foreach ($_FILES['photos']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['photos']['error'][$key] === UPLOAD_ERR_OK) {
                     $file_name = $_FILES['photos']['name'][$key];
@@ -85,31 +102,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
 
                     if (in_array($file_ext, $allowed_exts)) {
-                        // Sanitize filename and create a unique name
-                        $safe_file_name = preg_replace("/[^a-zA-Z0-9._-]/", "", basename($file_name));
-                        $unique_file_name = uniqid('img_', true) . '-' . $safe_file_name;
-                        $destination = $upload_dir . $unique_file_name;
-
-                        if (move_uploaded_file($tmp_name, $destination)) {
-                            // Insert photo path into database
-                            $stmt = $db->prepare("INSERT INTO ListingPhoto (listing_id, photo_url, photo_order) VALUES (?, ?, ?)");
-                            $stmt->execute([$listing_id, $destination, $photo_order]);
+                        // Generate a unique filename
+                        $safe_file_name = uniqid('img_', true) . '_' . preg_replace("/[^a-zA-Z0-9.]/", "", $file_name);
+                        $upload_path = $upload_dir . $safe_file_name;
+                        
+                        // Debug logging
+                        error_log("=== Image Upload Debug ===");
+                        error_log("Original filename: " . $file_name);
+                        error_log("Safe filename: " . $safe_file_name);
+                        error_log("Upload path: " . $upload_path);
+                        
+                        if (move_uploaded_file($tmp_name, $upload_path)) {
+                            error_log("File uploaded successfully to: " . $upload_path);
+                            
+                            // Store the relative path in the database
+                            $photo_stmt->execute([$listing_id, $upload_path, $photo_order]);
+                            error_log("Image path stored in database: " . $upload_path);
                             $photo_order++;
                         } else {
-                            // Handle move_uploaded_file error - log or add to an error array
-                            error_log("Failed to move uploaded file: " . $file_name);
+                            $upload_error = error_get_last();
+                            error_log("Failed to move uploaded file. PHP Error: " . print_r($upload_error, true));
+                            error_log("Upload error code: " . $_FILES['photos']['error'][$key]);
                         }
                     } else {
-                        // Handle invalid file type - log or add to an error array
                         error_log("Invalid file type: " . $file_name);
                     }
                 } else {
-                    // Handle upload error - log or add to an error array
-                    error_log("Upload error for file " . ($_FILES['photos']['name'][$key] ?? 'unknown') . ": " . $_FILES['photos']['error'][$key]);
+                    error_log("Upload error for file " . $file_name . ": " . $_FILES['photos']['error'][$key]);
                 }
             }
         }
-        // --- END: Handle file uploads ---
 
         $db->commit();
         header("Location: listing.php?id=" . $listing_id);
@@ -496,7 +518,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="block text-lg font-semibold text-gray-900 mb-4">
                   Upload Photos
                 </label>
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center" id="drop-zone">
                   <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                     <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
@@ -510,7 +532,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB (Max 5 files recommended)</p>
                    <!-- Container for photo previews -->
                   <div id="photo-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      <!-- Photo previews will be dynamically inserted here by Cloudinary JS -->
+                      <!-- Photo previews will be dynamically inserted here -->
                   </div>
                 </div>
               </div>
@@ -604,64 +626,121 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       // --- ADD JavaScript for local file preview --- 
       const photoInput = document.getElementById('photos');
       const previewContainer = document.getElementById('photo-preview');
+      const dropZone = document.getElementById('drop-zone');
       let selectedFiles = []; // To keep track of files if we want to implement more complex removal
+
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      // Highlight drop zone when item is dragged over it
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      // Handle dropped files
+      dropZone.addEventListener('drop', handleDrop, false);
+
+      function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function highlight(e) {
+        dropZone.classList.add('border-orange-500', 'bg-orange-50');
+      }
+
+      function unhighlight(e) {
+        dropZone.classList.remove('border-orange-500', 'bg-orange-50');
+      }
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+      }
+
+      function handleFiles(files) {
+        if (files.length > 5) {
+          alert('You can select a maximum of 5 images. The first 5 will be shown.');
+        }
+        
+        // Convert FileList to Array and take first 5 files
+        const validFiles = Array.from(files).slice(0, 5).filter(file => {
+          if (!file.type.startsWith('image/')) {
+            alert(`File ${file.name} is not an image and will not be previewed or uploaded.`);
+            return false;
+          }
+          return true;
+        });
+
+        // If we already have files, append the new ones (up to 5 total)
+        if (selectedFiles.length > 0) {
+          const remainingSlots = 5 - selectedFiles.length;
+          if (remainingSlots > 0) {
+            selectedFiles = [...selectedFiles, ...validFiles.slice(0, remainingSlots)];
+          }
+        } else {
+          selectedFiles = validFiles;
+        }
+
+        // Update the file input to include all selected files
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        photoInput.files = dataTransfer.files;
+
+        updatePreview();
+      }
+
+      function updatePreview() {
+        previewContainer.innerHTML = '';
+        
+        selectedFiles.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'relative force-square-shape';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = file.name;
+            img.className = 'absolute inset-0 w-full h-full object-cover rounded-md';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.className = 'absolute top-1 right-1 bg-orange-500 text-white rounded-full p-0.5 leading-none text-xs w-5 h-5 flex items-center justify-center hover:bg-orange-600 transition-colors';
+            removeBtn.type = 'button';
+            
+            removeBtn.onclick = () => {
+              selectedFiles = selectedFiles.filter((_, i) => i !== index);
+              // Update the file input to reflect the removed file
+              const dataTransfer = new DataTransfer();
+              selectedFiles.forEach(file => dataTransfer.items.add(file));
+              photoInput.files = dataTransfer.files;
+              updatePreview();
+            };
+            
+            div.appendChild(img);
+            div.appendChild(removeBtn);
+            previewContainer.appendChild(div);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
 
       if (photoInput && previewContainer) {
         photoInput.addEventListener('change', function(event) {
-          previewContainer.innerHTML = ''; // Clear existing previews
-          selectedFiles = Array.from(event.target.files); // Store the FileList
-          let fileCount = 0;
-
-          for (const file of selectedFiles) {
-            if (fileCount >= 5) { // Limit previews if desired, matching text "Max 5 files recommended"
-                alert('You can select a maximum of 5 images for preview. The first 5 will be shown.');
-                break;
-            }
-            if (!file.type.startsWith('image/')){
-                alert(`File ${file.name} is not an image and will not be previewed or uploaded.`);
-                continue; 
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              const div = document.createElement('div');
-              div.className = 'relative force-square-shape';
-              
-              const img = document.createElement('img');
-              img.src = e.target.result;
-              img.alt = file.name;
-              img.className = 'absolute inset-0 w-full h-full object-cover rounded-md';
-              
-              const removeBtn = document.createElement('button');
-              removeBtn.innerHTML = '&times;';
-              removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 leading-none text-xs w-5 h-5 flex items-center justify-center';
-              removeBtn.type = 'button';
-              
-              // Store the file reference with the preview for removal
-              div.dataset.fileName = file.name; 
-
-              removeBtn.onclick = () => {
-                div.remove();
-                // This only removes the preview. 
-                // To prevent upload, we'd need to filter `selectedFiles` or clear and re-select.
-                // For simplicity now, it just removes preview. User needs to re-select if they want to exclude a file after selection.
-                // Or, we can filter `selectedFiles` and re-assign to a new FileList (which is complex).
-                // A simpler approach for actual filtering is to tell user to re-select.
-                // Or, on submit, filter the DataTransfer object if using that.
-                // For now: removing preview only.
-              };
-              
-              div.appendChild(img);
-              div.appendChild(removeBtn);
-              previewContainer.appendChild(div);
-            }
-            reader.readAsDataURL(file);
-            fileCount++;
-          }
+          handleFiles(event.target.files);
         });
       } else {
-          if (!photoInput) console.error('Photo input #photos not found.');
-          if (!previewContainer) console.error('Photo preview container #photo-preview not found.');
+        if (!photoInput) console.error('Photo input #photos not found.');
+        if (!previewContainer) console.error('Photo preview container #photo-preview not found.');
       }
       // --- END JavaScript for local file preview ---
 

@@ -17,7 +17,7 @@ if ($property_id <= 0) {
 try {
     // Fetch property details
     $stmt = $db->prepare("
-        SELECT l.*, r.name as realtor_name
+        SELECT l.*, r.name as realtor_name, r.verification_status
         FROM Listing l
         JOIN Realtor r ON l.realtor_id = r.realtor_id
         WHERE l.listing_id = ?
@@ -25,7 +25,12 @@ try {
     $stmt->execute([$property_id]);
     $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Debug logging
+    error_log("Property ID being queried: " . $property_id);
+    error_log("Query result: " . print_r($property, true));
+
     if (!$property) {
+        error_log("No property found for ID: " . $property_id);
         header("Location: index.php");
         exit();
     }
@@ -52,8 +57,27 @@ try {
     $stmt->execute([$property_id]);
     $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Direct database debugging
+    error_log("=== Database Debug Info ===");
+    error_log("Property ID: " . $property_id);
+    
+    // Check all photos in the database for this listing
+    $debug_stmt = $db->prepare("SELECT * FROM ListingPhoto WHERE listing_id = ?");
+    $debug_stmt->execute([$property_id]);
+    $all_photos = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("All photos in database for this listing: " . print_r($all_photos, true));
+    
+    // Check if the upload directory exists and is writable
+    $upload_dir = 'uploads/listing_images/';
+    error_log("Upload directory exists: " . (is_dir($upload_dir) ? 'Yes' : 'No'));
+    error_log("Upload directory is writable: " . (is_writable($upload_dir) ? 'Yes' : 'No'));
+    
+    // List all files in the upload directory
+    error_log("Files in upload directory: " . print_r(scandir($upload_dir), true));
+
     // If no images found, use placeholder
     if (empty($images)) {
+        error_log("No images found for listing " . $property_id . ", using placeholder");
         $images = [['photo_url' => 'assets/images/apartment-placeholder.jpg', 'photo_order' => 1]];
     }
 
@@ -140,6 +164,12 @@ try {
             <div class="title-text">
                 <h1><?php echo htmlspecialchars($property['title']); ?></h1>
                 <div class="location"><?php echo htmlspecialchars($property['city'] . ', ' . $property['state']); ?></div>
+                <?php if ($property['verification_status'] !== 'Verified'): ?>
+                    <div class="warning-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Warning: This listing is from an unverified realtor
+                    </div>
+                <?php endif; ?>
             </div>
             <?php
             ?>
@@ -476,6 +506,23 @@ try {
             color: #333;
             width: 24px;
             text-align: center;
+        }
+
+        .warning-message {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            border: 1px solid #ffeeba;
+        }
+
+        .warning-message i {
+            color: #856404;
         }
     </style>
 </body>

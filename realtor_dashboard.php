@@ -463,7 +463,7 @@ function getDisplayStatusText($status) {
         <!-- Navbar -->
         <header class="navbar">
             <div class="navbar-left">
-            </div>
+                    </div>
             <div class="navbar-right">
                 <a href="index.php" class="nav-link">Home</a>
                 <a href="add_listing.php" class="nav-link">Create Listing</a>
@@ -482,7 +482,7 @@ function getDisplayStatusText($status) {
                         </span>
                     <?php endif; ?>
                 </h1>
-            </div>
+                </div>
 
             <!-- Page Title -->
             <h2 class="page-title">Your Listings</h2>

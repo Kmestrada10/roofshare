@@ -460,7 +460,7 @@ $offset = ($page - 1) * $items_per_page;
                             if ($photo) {
                                 echo "<img src='" . htmlspecialchars($photo['photo_url']) . "' alt='Property Image'>";
                             } else {
-                                echo "<img src='assets/images/placeholder.jpg' alt='No Image Available'>";
+                                echo "<img src='assets/images/apartment-placeholder.jpg' alt='No Image Available'>";
                             }
                             echo "</div>";
                             
