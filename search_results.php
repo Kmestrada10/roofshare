@@ -2,7 +2,7 @@
 require_once("config/db.php");
 session_start();
 
-// Set up pagination
+
 $items_per_page = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $items_per_page;
@@ -14,18 +14,18 @@ $offset = ($page - 1) * $items_per_page;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Apartments | RoofShare</title>
     
-    <!-- Google Fonts -->
+   
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome CDN -->
+  
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- Google Maps API -->
+  
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
 
-    <!-- Main CSS -->
+
     <link rel="stylesheet" href="assets/css/landing.css">
     
     <style>
@@ -151,82 +151,76 @@ $offset = ($page - 1) * $items_per_page;
 
         .main-content-area {
             display: flex;
-            flex-grow: 1; /* Takes up remaining vertical space */
-            overflow: hidden; /* Prevent scrollbars on this container directly */
-            width: 100%; /* Explicitly set width */
-            height: 0; /* ADDED: Helps solidify height calculation with flex-grow */
+            flex-grow: 1; 
+            overflow: hidden; 
+            width: 100%; 
+            height: 0; 
         }
 
-        #map-container { /* Changed from .map-placeholder-container */
+        #map-container { 
             flex-grow: 1;
-            width: 0; /* Common practice with flex-grow */
-            /* background-color: #e0f2e9; Removed placeholder style */
-            /* display: flex; Removed placeholder style */
-            /* align-items: center; Removed placeholder style */
-            /* justify-content: center; Removed placeholder style */
-            /* font-size: 1.5rem; Removed placeholder style */
-            /* color: #28a745; Removed placeholder style */
-            overflow-y: hidden; /* Map handles its own overflow/panning */
-            height: 100%; /* Ensure it takes full height of parent */
+            width: 0; 
+            overflow-y: hidden; 
+            height: 100%; 
         }
 
         .listings-column-container {
-            width: 600px; /* Increased from 500px */
-            flex-shrink: 0; /* Prevent shrinking */
-            padding: 20px 0; /* Keep vertical padding, remove horizontal */
-            overflow-y: auto; /* Make this column scrollable */
+            width: 600px; 
+            flex-shrink: 0; 
+            padding: 20px 0; 
+            overflow-y: auto; 
             background-color: #fff;
-            box-sizing: border-box; /* Added */
+            box-sizing: border-box; 
         }
         
         .listings-column-container .listing-item {
-            width: 100%; /* Ensure cards try to take full width of parent column */
+            width: 100%; 
             margin-bottom: 20px;
             margin-right: 0 !important; 
-            border-radius: 0; /* Changed from 4px for a straight divider look */
+            border-radius: 0; 
             background-color: #fff; 
-            border-bottom: 3px solid #e9ecef; /* ADDED for a straight divider, NOW EVEN THICKER */
-            padding: 0 15px 15px 15px; /* 0 top, 15px R, 15px B, 15px L */
+            border-bottom: 3px solid #e9ecef; 
+            padding: 0 15px 15px 15px; 
         }
 
         .listing-item .listing-location-top {
-            font-size: 1.4rem; /* Increased from 1.2rem */
+            font-size: 1.4rem; 
             font-weight: 600;
-            margin-bottom: 2px; /* Reduced from 5px to bring address closer */
-            display: block; /* Ensure it's full width */
+            margin-bottom: 2px; 
+            display: block; 
         }
 
         .listing-item .listing-address-sub {
-            font-size: 0.85rem; /* Reduced from 0.9rem */
+            font-size: 0.85rem; 
             color: #666;
-            margin-bottom: 8px; /* Adjusted for divider */
+            margin-bottom: 8px; 
             display: block;
         }
 
-        .listing-item .listing-divider { /* NEW RULE */
+        .listing-item .listing-divider { 
             height: 1px;
             background-color: #e9ecef;
-            margin-top: 8px;    /* Space above the divider */
-            margin-bottom: 15px; /* Space below the divider */
-            margin-left: -15px; /* Counteract parent's left padding */
-            margin-right: -15px; /* Counteract parent's right padding */
-            width: calc(100% + 30px); /* Expand to fill the space created by negative margins */
+            margin-top: 8px;    
+            margin-bottom: 15px; 
+            margin-left: -15px; 
+            margin-right: -15px; 
+            width: calc(100% + 30px); 
         }
 
-        .listing-item .listing-content-wrapper { /* New flex wrapper for image and details-column */
+        .listing-item .listing-content-wrapper { 
             display: flex;
-            gap: 15px; /* Space between image and details column */
-            align-items: flex-start; /* Align items to the top */
+            gap: 15px; 
+            align-items: flex-start; 
         }
 
-        .listing-item .listing-image-left { /* New class for the image on the left */
-            width: 300px; /* Reduced from 340px */
-            flex-shrink: 0; /* Prevent image column from shrinking */
+        .listing-item .listing-image-left { 
+            width: 300px; 
+            flex-shrink: 0; 
         }
 
         .listing-item .listing-image-left img {
             width: 100%;
-            height: 200px; /* Reduced from 230px */
+            height: 200px; 
             object-fit: cover;
             border-radius: 3px;
         }
@@ -285,17 +279,15 @@ $offset = ($page - 1) * $items_per_page;
             background-color: #e65c00;
         }
 
-        /* Google Maps Attribution Styling */
         .gmnoprint, .gm-style-cc {
             display: none !important;
         }
         
-        /* Keep the Google logo but make it smaller and more subtle */
+ 
         .gm-style a[href^="https://maps.google.com/maps"] {
             display: none !important;
         }
         
-        /* Style the attribution container */
         .gm-style-iw {
             padding: 0 !important;
         }
@@ -310,12 +302,10 @@ $offset = ($page - 1) * $items_per_page;
             max-width: 300px !important;
         }
         
-        /* Remove the close button */
         .gm-ui-hover-effect {
             display: none !important;
         }
 
-        /* Google Places Autocomplete Styling */
         .pac-container {
             border-radius: 8px !important;
             margin-top: 5px !important;
@@ -450,7 +440,6 @@ $offset = ($page - 1) * $items_per_page;
                             echo "<div class='listing-divider'></div>";
                             echo "<div class='listing-content-wrapper'>";
                             
-                            // Get the first photo for the listing
                             $photo_query = "SELECT photo_url FROM ListingPhoto WHERE listing_id = ? ORDER BY photo_order LIMIT 1";
                             $photo_stmt = $db->prepare($photo_query);
                             $photo_stmt->execute([$listing['listing_id']]);
@@ -474,8 +463,8 @@ $offset = ($page - 1) * $items_per_page;
                             echo "<a href='listing.php?id=" . $listing['listing_id'] . "' class='view-listing-button'>View Listing</a>";
                             echo "</div>";
                             
-                            echo "</div>"; // End listing-content-wrapper
-                            echo "</div>"; // End listing-item
+                            echo "</div>"; 
+                            echo "</div>"; 
                         }
                     } else {
                         echo "<div class='no-results'>No listings found within " . $radius . " miles of " . htmlspecialchars($location) . ".</div>";
@@ -492,7 +481,7 @@ $offset = ($page - 1) * $items_per_page;
         function initMap() {
             const map = new google.maps.Map(document.getElementById('map-container'), {
                 zoom: 12,
-                center: { lat: 39.8283, lng: -98.5795 }, // Center of USA
+                center: { lat: 39.8283, lng: -98.5795 }, 
                 mapTypeControl: true,
                 streetViewControl: true,
                 fullscreenControl: true
@@ -509,7 +498,7 @@ $offset = ($page - 1) * $items_per_page;
             autocomplete.addListener('place_changed', function() {
                 const place = autocomplete.getPlace();
                 if (place.geometry) {
-                    // Validate city selection
+                   
                     let isCity = false;
                     for (const component of place.address_components) {
                         if (component.types.includes('locality')) {
