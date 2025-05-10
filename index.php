@@ -232,16 +232,23 @@ try {
                         searchInput.value = '';
                         return;
                     }
+
+                    // Store the coordinates for the search
+                    searchInput.dataset.lat = place.geometry.location.lat();
+                    searchInput.dataset.lng = place.geometry.location.lng();
                 }
             });
         }
 
         function handleSearch() {
             const searchInput = document.getElementById('searchInput');
-            if (searchInput.value.trim() !== '') {
-                window.location.href = 'search_results.php?location=' + encodeURIComponent(searchInput.value);
+            const lat = searchInput.dataset.lat;
+            const lng = searchInput.dataset.lng;
+
+            if (searchInput.value.trim() !== '' && lat && lng) {
+                window.location.href = `search_results.php?location=${encodeURIComponent(searchInput.value)}&latitude=${lat}&longitude=${lng}`;
             } else {
-                alert('Please enter a search term');
+                alert('Please select a city from the dropdown');
             }
         }
 
