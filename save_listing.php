@@ -1,19 +1,19 @@
 <?php
-// Enable error reporting
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Start session
+
 session_start();
 
-// Set content type to JSON
+
 header('Content-Type: application/json');
 
-// Debug logging
+
 error_log("Save listing request - Session data: " . print_r($_SESSION, true));
 error_log("Save listing request - POST data: " . print_r($_POST, true));
 
-// Check if user is logged in and is a renter
+
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'renter') {
     error_log("Save listing failed - User not logged in as renter");
     echo json_encode(['success' => false, 'message' => 'You must be logged in as a renter to save listings']);
@@ -35,20 +35,20 @@ error_log("Processing save/unsave - Action: $action, Listing ID: $listing_id, Re
 try {
     require_once 'config/db.php';
     
-    // Debug: Check if the listing exists
+   
     $check = $db->prepare("SELECT COUNT(*) FROM Listing WHERE listing_id = ?");
     $check->execute([$listing_id]);
     $listingExists = $check->fetchColumn();
     error_log("Listing exists check: " . ($listingExists ? 'Yes' : 'No'));
 
-    // Debug: Check if the renter exists
+
     $check = $db->prepare("SELECT COUNT(*) FROM Renter WHERE renter_id = ?");
     $check->execute([$renter_id]);
     $renterExists = $check->fetchColumn();
     error_log("Renter exists check: " . ($renterExists ? 'Yes' : 'No'));
     
     if ($action === 'save') {
-        // Check if already saved
+     
         $check = $db->prepare("SELECT COUNT(*) FROM Saves WHERE renter_id = ? AND listing_id = ?");
         $check->execute([$renter_id, $listing_id]);
         if ($check->fetchColumn() > 0) {
@@ -57,7 +57,7 @@ try {
             exit;
         }
 
-        // Save the listing
+   
         $stmt = $db->prepare("INSERT INTO Saves (renter_id, listing_id, saved_at) VALUES (?, ?, NOW())");
         $result = $stmt->execute([$renter_id, $listing_id]);
         error_log("Save query result: " . ($result ? 'Success' : 'Failed'));
