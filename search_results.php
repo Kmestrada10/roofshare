@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Apartments | RoofShare</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <?php /* <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/> */ ?>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="assets/css/landing.css">
+    
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex;
+            justify-content: flex-end; /* Changed from space-between */
+            align-items: center;
+            padding: 0 30px;
+            height: 70px;
+            background-color: #fff;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .logo a {
+            text-decoration: none;
+            color: #ff6600; /* RoofShare orange */
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .auth-links {
+            display: flex;
+            gap: 20px;
+        }
+        .auth-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-filters-bar {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: nowrap; /* Changed from wrap */
+        }
+        .search-filters-bar input[type="text"],
+        .search-filters-bar select {
+            padding: 10px; /* Default padding, will be more specific below */
+            border: 1px solid #ccc; /* Default border, changed from #ced4da */
+            border-radius: 8px; /* Default radius, changed from 4px */
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            height: 40px; /* Reduced from 44px */
+            box-sizing: border-box; /* Ensure padding is included in height */
+            flex: 0 1 auto; /* Allow shrinking, don't grow, basis from content */
+            min-width: 100px; /* Reduced from 110px */
+        }
+
+        /* Specific padding for text inputs that don't need space for an arrow */
+        .search-filters-bar input[type="text"] {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        
+        /* Specific styling for select elements to include custom arrow */
+        .search-filters-bar select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 10px auto;
+            padding-left: 15px; /* Consistent left padding */
+            padding-right: 40px; /* Make space for the arrow */
+            outline: none;
+        }
+
+        .search-filters-bar button {
+            padding: 10px 20px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .search-filters-bar button:hover {
+            background-color: #e65c00;
+        }
+
+        /* Styles for the new main search input wrapper */
+        .search-filters-bar .main-search-wrapper {
+            display: flex;
+            flex: 1 1 450px; /* Basis increased from 380px */
+            border: 1px solid #ccc;
+            border-radius: 50px; /* Fully rounded */
+            overflow: hidden;
+            background-color: white;
+            align-items: stretch; /* Make children fill height */
+        }
+
+        .search-filters-bar .main-search-wrapper input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            padding: 10px 15px; /* Adjusted padding */
+            border-radius: 0;
+            outline: none;
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            background-color: transparent;
+            margin: 0; /* Reset margin */
+        }
+
+        .search-filters-bar .main-search-wrapper button {
+            background-color: white; 
+            color: #ff6600; /* Orange icon */
+            border: none;
+            border-left: 1px solid #eee; /* Subtle separator */
+            padding: 0 15px; 
+            border-radius: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem; /* Icon size */
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-family: 'Montserrat', sans-serif; 
+            margin: 0; /* Reset margin */
+        }
+
+        .search-filters-bar .main-search-wrapper button:hover {
+            background-color: #f8f8f8;
+            color: #e65c00; /* Darker orange icon */
+        }
+
+        .main-content-area {
+            display: flex;
+            flex-grow: 1; /* Takes up remaining vertical space */
+            overflow: hidden; /* Prevent scrollbars on this container directly */
+            width: 100%; /* Explicitly set width */
+            height: 0; /* ADDED: Helps solidify height calculation with flex-grow */
+        }
+
+        #map-container { /* Changed from .map-placeholder-container */
+            flex-grow: 1;
+            width: 0; /* Common practice with flex-grow */
+            /* background-color: #e0f2e9; Removed placeholder style */
+            /* display: flex; Removed placeholder style */
+            /* align-items: center; Removed placeholder style */
+            /* justify-content: center; Removed placeholder style */
+            /* font-size: 1.5rem; Removed placeholder style */
+            /* color: #28a745; Removed placeholder style */
+            overflow-y: hidden; /* Map handles its own overflow/panning */
+            height: 100%; /* Ensure it takes full height of parent */
+        }
+
+        .listings-column-container {
+            width: 600px; /* Increased from 500px */
+            flex-shrink: 0; /* Prevent shrinking */
+            padding: 20px 0; /* Keep vertical padding, remove horizontal */
+            overflow-y: auto; /* Make this column scrollable */
+            background-color: #fff;
+            box-sizing: border-box; /* Added */
+        }
+        
+        .listings-column-container .listing-item {
+            width: 100%; /* Ensure cards try to take full width of parent column */
+            margin-bottom: 20px;
+            margin-right: 0 !important; 
+            border-radius: 0; /* Changed from 4px for a straight divider look */
+            background-color: #fff; 
+            border-bottom: 3px solid #e9ecef; /* ADDED for a straight divider, NOW EVEN THICKER */
+            padding: 0 15px 15px 15px; /* 0 top, 15px R, 15px B, 15px L */
+        }
+
+        .listing-item .listing-location-top {
+            font-size: 1.4rem; /* Increased from 1.2rem */
+            font-weight: 600;
+            margin-bottom: 2px; /* Reduced from 5px to bring address closer */
+            display: block; /* Ensure it's full width */
+        }
+
+        .listing-item .listing-address-sub {
+            font-size: 0.85rem; /* Reduced from 0.9rem */
+            color: #666;
+            margin-bottom: 8px; /* Adjusted for divider */
+            display: block;
+        }
+
+        .listing-item .listing-divider { /* NEW RULE */
+            height: 1px;
+            background-color: #e9ecef;
+            margin-top: 8px;    /* Space above the divider */
+            margin-bottom: 15px; /* Space below the divider */
+            margin-left: -15px; /* Counteract parent's left padding */
+            margin-right: -15px; /* Counteract parent's right padding */
+            width: calc(100% + 30px); /* Expand to fill the space created by negative margins */
+        }
+
+        .listing-item .listing-content-wrapper { /* New flex wrapper for image and details-column */
+            display: flex;
+            gap: 15px; /* Space between image and details column */
+            align-items: flex-start; /* Align items to the top */
+        }
+
+        .listing-item .listing-image-left { /* New class for the image on the left */
+            width: 300px; /* Reduced from 340px */
+            flex-shrink: 0; /* Prevent image column from shrinking */
+        }
+
+        .listing-item .listing-image-left img {
+            width: 100%;
+            height: 200px; /* Reduced from 230px */
+            object-fit: cover;
+            border-radius: 3px;
+        }
+
+        .listing-item .listing-details-right { /* New class for the right details column */
+            display: flex;
+            flex-direction: column; /* Stack details and button vertically */
+            flex-grow: 1; /* Allow this column to take remaining space */
+            justify-content: space-between; /* Push button to bottom if space allows */
+            min-height: 200px; /* Match new image height */
+        }
+        
+        .listing-item .listing-details-right .listing-info { /* Wrapper for beds/baths, price */
+            font-size: 1rem; /* Increased from 0.9rem */
+            margin-bottom: 5px;
+        }
+
+        .listing-item .listing-details-right .listing-price {
+            font-size: 1.1rem; /* Increased from 1rem */
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .listing-item .listing-details-right .listing-amenities {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 10px;
+            line-height: 1.4; /* Helps if amenities wrap to multiple lines */
+        }
+
+        .listing-item .view-listing-button {
+            display: block; /* Changed from inline-block */
+            width: 100%; /* Ensure it takes full width of its container */
+            margin-top: 10px;
+            padding: 10px 15px; /* Adjusted padding slightly */
+            background-color: #ff6600; /* Changed to RoofShare orange */
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .listing-item .view-listing-button:hover {
+            background-color: #e65c00; /* Changed to darker orange for hover */
+        }
+
+    </style>
+</head>
+<body>
+    <header class="header">
+        <?php /* <div class="logo">
+            <a href="index.php">RoofShare</a>
+        </div> */ ?>
+        <div class="auth-links">
+            <a href="login.php">Log In</a>
+            <a href="register.php">Sign Up</a>
+        </div>
+    </header>
+
+    <div class="search-filters-bar">
+        <div class="main-search-wrapper">
+            <input type="text" placeholder="City, State, or ZIP">
+            <button type="button"><i class="fas fa-search"></i></button>
+        </div>
+        <select name="property_type">
+            <option value="">Property Type (Any)</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="condo">Condo</option>
+            <option value="townhouse">Townhouse</option>
+            <option value="studio">Studio</option>
+        </select>
+        <select name="beds">
+            <option value="">Beds (Any)</option>
+            <option value="1">1 Bed</option>
+            <option value="2">2 Beds</option>
+            <option value="3">3 Beds</option>
+            <option value="4+">4+ Beds</option>
+        </select>
+        <select name="baths">
+            <option value="">Baths (Any)</option>
+            <option value="1">1 Bath</option>
+            <option value="1.5">1.5 Baths</option>
+            <option value="2">2 Baths</option>
+            <option value="2.5+">2.5+ Baths</option>
+        </select>
+        <input type="text" placeholder="Min Price">
+        <input type="text" placeholder="Max Price">
+        <select name="order_by">
+            <option value="">Order By</option>
+            <option value="price_asc">Price (Low to High)</option>
+            <option value="price_desc">Price (High to Low)</option>
+            <option value="date_new">Date (Newest First)</option>
+            <option value="date_old">Date (Oldest First)</option>
+        </select>
+    </div>
+
+    <div class="main-content-area">
+        <div id="map-container">
+            <!-- Map will be initialized here by Google Maps -->
+        </div>
+        <div class="listings-column-container">
+            <?php
+            // Placeholder listings data (mimicking index.php structure)
+            $search_listings = [
+                [
+                    'id' => 101,
+                    'image' => 'assets/images/apartment-placeholder.jpg',
+                    'location' => 'Downtown Apartment with View',
+                    'address' => '123 Main St, Anytown, ST 12345',
+                    'distance' => 'Beds: 2 | Baths: 2',
+                    'price' => '$2,200 / month',
+                    'amenities' => ['Gym', 'Pool', 'Rooftop Deck'],
+                    'lat' => 40.7061, 'lng' => -74.0088 // Lower Manhattan
+                ],
+                [
+                    'id' => 102,
+                    'image' => 'assets/images/apartment-placeholder.jpg',
+                    'location' => 'Brooklyn Townhouse with Garden',
+                    'address' => '456 Oak Ln, Suburbia, ST 67890',
+                    'distance' => 'Beds: 3 | Baths: 2.5',
+                    'price' => '$2,850 / month',
+                    'amenities' => ['Pet Friendly', 'Garage', 'Backyard'],
+                    'lat' => 40.6782, 'lng' => -73.9800 // Park Slope, Brooklyn
+                ],
+                [
+                    'id' => 103,
+                    'image' => 'assets/images/apartment-placeholder.jpg',
+                    'location' => 'Cozy Studio Near Campus',
+                    'address' => '789 University Ave, Collegetown, ST 10112',
+                    'distance' => 'Beds: Studio | Baths: 1',
+                    'price' => '$1,500 / month',
+                    'amenities' => ['Furnished', 'Utilities Included', 'On-site Laundry'],
+                    'lat' => 40.7295, 'lng' => -73.9972 // Greenwich Village (near NYU)
+                ],
+                [
+                    'id' => 104,
+                    'image' => 'assets/images/apartment-placeholder.jpg',
+                    'location' => 'Luxury Condo, Full Amenities',
+                    'address' => '101 Sky High Rd, Metropolis, ST 13141',
+                    'distance' => 'Beds: 1 | Baths: 1',
+                    'price' => '$1,950 / month',
+                    'amenities' => ['Concierge', 'Fitness Center', 'Sauna', 'Parking'],
+                    'lat' => 40.7549, 'lng' => -73.9840 // Midtown Manhattan
+                ]
+            ];
+
+            foreach ($search_listings as $listing):
+            ?>
+                <div class="listing-item">
+                    <div class="listing-location-top"><?php echo htmlspecialchars($listing['location']); ?></div>
+                    <?php if (!empty($listing['address'])): ?>
+                        <div class="listing-address-sub">
+                           <?php echo htmlspecialchars($listing['address']); ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="listing-divider"></div>
+                    <div class="listing-content-wrapper">
+                        <div class="listing-image-left">
+                            <img src="<?php echo htmlspecialchars($listing['image']); ?>" 
+                                 alt="Property in <?php echo htmlspecialchars($listing['location']); ?>"
+                                 loading="lazy">
+                        </div>
+                        <div class="listing-details-right">
+                            <div> <!-- Wrapper for Price and Info -->
+                                <div class="listing-price"><?php echo htmlspecialchars($listing['price']); ?></div>
+                                <div class="listing-info"><?php echo htmlspecialchars($listing['distance']); ?></div>
+                            </div>
+
+                            <?php if (!empty($listing['amenities'])): ?>
+                                <div class="listing-amenities">
+                                    <?php echo htmlspecialchars(implode(', ', $listing['amenities'])); ?>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <a href="listing.php?id=<?php echo htmlspecialchars($listing['id']); ?>" class="view-listing-button">View Listing</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <?php /* <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> */ ?>
+    
+    <script>
+        // Get listing data from PHP for Google Maps
+        const listingsData = <?php echo json_encode($search_listings); ?>;
+        let map;
+        let infoWindow;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map-container'), {
+                center: { lat: 37.8, lng: -96 }, // Default center (US)
+                zoom: 4, // Default zoom
+                mapTypeControl: false, // Optional: hide map type control
+                streetViewControl: false // Optional: hide street view control
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+            const bounds = new google.maps.LatLngBounds();
+
+            if (listingsData && listingsData.length > 0) {
+                listingsData.forEach(function(listing) {
+                    if (listing.lat && listing.lng) {
+                        const marker = new google.maps.Marker({
+                            position: { lat: parseFloat(listing.lat), lng: parseFloat(listing.lng) },
+                            map: map,
+                            title: listing.location
+                        });
+
+                        marker.addListener('click', function() {
+                            infoWindow.setContent(
+                                '<div><strong>' + listing.location + '</strong><br>' +
+                                listing.address + '</div>'
+                            );
+                            infoWindow.open(map, marker);
+                        });
+                        bounds.extend(marker.getPosition());
+                    }
+                });
+
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds);
+                     // Add a listener for idle to zoom out if map is too zoomed in after fitBounds
+                    google.maps.event.addListenerOnce(map, 'idle', function(){
+                        if (map.getZoom() > 16) map.setZoom(16);
+                        if (listingsData.length === 1 && map.getZoom() > 14) map.setZoom(14);
+                    });
+                } else {
+                    // Default view if no valid listings with coordinates
+                    map.setCenter({ lat: 34.0522, lng: -118.2437 });
+                    map.setZoom(10);
+                }
+            } else {
+                // Default view if no listings at all
+                map.setCenter({ lat: 34.0522, lng: -118.2437 });
+                map.setZoom(10);
+            }
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&callback=initMap">
+    </script>
+</body>
+</html> 
