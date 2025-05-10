@@ -47,14 +47,45 @@ $reported_accounts = [];
 $listings = [];
 
 if ($role === 'Administrator') {
-    $pending_realtors = $db->query("SELECT realtor_id, name, email, phone_number, verification_status FROM Realtor ORDER BY 
+    // Get search and filter parameters
+    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+    $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
+    
+    // Base query
+    $query = "SELECT realtor_id, name, email, phone_number, verification_status FROM Realtor WHERE 1=1";
+    $params = [];
+    
+    // Add search condition if search term exists
+    if (!empty($search)) {
+        $query .= " AND (name LIKE ? OR email LIKE ? OR phone_number LIKE ?)";
+        $search_param = "%$search%";
+        $params = array_merge($params, [$search_param, $search_param, $search_param]);
+    }
+    
+    // Add status filter if not 'all'
+    if ($status_filter !== 'all') {
+        $query .= " AND verification_status = ?";
+        $params[] = $status_filter;
+    }
+    
+    // Add ordering
+    $query .= " ORDER BY 
         CASE 
             WHEN verification_status = 'Pending' THEN 1
             WHEN verification_status = 'Verified' THEN 2
             ELSE 3
         END,
-        name ASC")->fetchAll();
+        name ASC";
+    
+    // Prepare and execute the query
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+    $pending_realtors = $stmt->fetchAll();
+    
+    // Commented out reported accounts section
+    /*
     $reported_accounts = $db->query("SELECT report_id, realtor_id, description, strikes FROM ReportedAccount ORDER BY created_at DESC")->fetchAll();
+    */
 }
 
 if ($role === 'Moderator') {
@@ -84,7 +115,8 @@ if ($role === 'Moderator') {
         body {
             font-family: "Montserrat", sans-serif;
             color: #333;
-            background-color: #f8f9fa;
+            background-color: #ffffff;
+            min-height: 100vh;
         }
         a { text-decoration: none; color: inherit; }
 
@@ -178,6 +210,7 @@ if ($role === 'Moderator') {
             overflow-y: auto;
             background-color: #ffffff;
             padding: 80px 150px 30px;
+            min-height: 100vh;
         }
 
         /* Page Title */
@@ -440,6 +473,38 @@ if ($role === 'Moderator') {
         .btn-reject:hover {
             background-color: #c82333;
         }
+
+        /* Search Form Styles */
+        .search-form {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .search-form .search-bar-wrapper {
+            flex: 1;
+        }
+
+        .search-form .filter-select {
+            min-width: 150px;
+        }
+
+        /* Add hover effect to select */
+        .filter-select:hover {
+            border-color: #999;
+        }
+
+        /* Add focus effect to select */
+        .filter-select:focus {
+            border-color: #ff6600;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.1);
+        }
+
+        .dashboard-container {
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -475,16 +540,18 @@ if ($role === 'Moderator') {
                 <h2 class="page-title">Pending Realtor Verifications</h2>
                 <section class="filter-area">
                     <div class="filter-controls">
-                        <div class="search-bar-wrapper">
-                            <input type="text" placeholder="Search realtors...">
-                            <button><i class="fa fa-search"></i></button>
-                        </div>
-                        <select class="filter-select">
-                            <option>All Status</option>
-                            <option>Pending</option>
-                            <option>Verified</option>
-                            <option>Rejected</option>
-                        </select>
+                        <form method="GET" class="search-form" style="display: flex; gap: 15px; width: 100%;">
+                            <div class="search-bar-wrapper">
+                                <input type="text" name="search" placeholder="Search realtors..." value="<?php echo htmlspecialchars($search ?? ''); ?>">
+                                <button type="submit"><i class="fa fa-search"></i></button>
+                            </div>
+                            <select name="status" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" <?php echo ($status_filter ?? 'all') === 'all' ? 'selected' : ''; ?>>All Status</option>
+                                <option value="Pending" <?php echo ($status_filter ?? '') === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                                <option value="Verified" <?php echo ($status_filter ?? '') === 'Verified' ? 'selected' : ''; ?>>Verified</option>
+                                <option value="Rejected" <?php echo ($status_filter ?? '') === 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
+                            </select>
+                        </form>
                     </div>
                 </section>
 
@@ -536,7 +603,7 @@ if ($role === 'Moderator') {
                     </table>
                 </section>
 
-                <!-- Reported Accounts Section -->
+                <!-- Commented out Reported Accounts Section
                 <h2 class="page-title" style="margin-top: 40px;">Reported Accounts</h2>
                 <section class="property-list">
                     <table class="property-table">
@@ -565,6 +632,7 @@ if ($role === 'Moderator') {
                         </tbody>
                     </table>
                 </section>
+                -->
 
             <?php elseif ($role === 'Moderator'): ?>
                 <!-- Moderator View -->
