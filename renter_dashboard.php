@@ -15,30 +15,509 @@ $stmt = $db->prepare("SELECT name FROM Renter WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 $name = $user['name'] ?? 'Renter';
+
+// Default user info if not logged in (for demonstration)
+$user_name = $_SESSION['user_name'] ?? 'temp_account';
+$user_type = $_SESSION['user_type'] ?? 'Renter'; // Changed to Renter type
+
+// Sample bookmarked property data (replace with actual data fetching later)
+$bookmarked_properties = [
+    [
+        'id' => 1,
+        'title' => 'Property with vertical slider',
+        'location' => 'Jersey City, Greenville',
+        'expires' => '2017-12-17',
+        'category' => 'Houses, Sales',
+        'status' => 'Available',
+        'price' => '$ 86,000',
+        'featured' => true,
+        'image' => 'assets/images/apartment-placeholder.jpg'
+    ],
+    [
+        'id' => 2,
+        'title' => 'Apartment with Subunits',
+        'location' => 'Jersey City, Greenville',
+        'expires' => '2017-02-17',
+        'category' => 'Apartments, Sales',
+        'status' => 'Available',
+        'price' => '$ 999',
+        'featured' => true,
+        'image' => 'assets/images/apartment-placeholder.jpg'
+    ],
+    [
+        'id' => 3,
+        'title' => 'Villa On Washington Ave',
+        'location' => 'New York, West Side',
+        'expires' => '2017-10-15',
+        'category' => 'Villas, Sales',
+        'status' => 'Rented',
+        'price' => '$ 5,500,000',
+        'featured' => false,
+        'image' => 'assets/images/apartment-placeholder.jpg'
+    ],
+    [
+        'id' => 4,
+        'title' => 'Downtown Studio',
+        'location' => 'Metropolis, Downtown',
+        'expires' => '2024-08-01',
+        'category' => 'Studio, Rent',
+        'status' => 'Available',
+        'price' => '$ 1,200 / mo',
+        'featured' => false,
+        'image' => 'assets/images/apartment-placeholder.jpg'
+    ]
+];
+
+// Function to get status circle CSS class
+function getStatusCircleClass($status) {
+    switch (strtolower($status)) {
+        case 'available':
+            return 'circle-green';
+        case 'rented':
+            return 'circle-red';
+        default:
+            return 'circle-grey';
+    }
+}
+
+// Function to get display text for status
+function getDisplayStatusText($status) {
+    switch (strtolower($status)) {
+        case 'available':
+            return 'Available';
+        case 'rented':
+            return 'Rented';
+        default:
+            return ucfirst(strtolower($status));
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renter Dashboard</title>
+    <!-- Google Fonts - Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .header { background-color: #007BFF; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .header a { color: white; margin-left: 20px; text-decoration: none; font-weight: bold; }
-        .container { padding: 30px; }
+        /* Basic Reset and Font */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        /* Navbar */
+        .navbar {
+            background-color: #ffffff;
+            padding: 0 20px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-link {
+            font-size: 0.95em;
+            color: #555;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .logout-link {
+            font-size: 0.95em;
+            color: #555;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #ffffff;
+            padding: 80px 150px 30px;
+        }
+
+        /* Page Title */
+        .page-title {
+            padding: 0;
+            padding-top: 25px;
+            padding-bottom: 0;
+            font-size: 1.8em;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* Filter/Action Area */
+        .filter-area {
+            padding: 25px 0;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-controls input[type="text"],
+        .filter-controls select {
+            padding: 16px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 0.9em;
+            flex-grow: 1;
+            background-color: white;
+            height: 54px;
+            font-family: inherit;
+        }
+        .filter-controls select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 10px auto;
+            padding-right: 40px;
+            outline: none;
+            font-size: 0.9em;
+            font-family: inherit;
+        }
+        .filter-controls button {
+            padding: 12px 25px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .filter-controls button:hover {
+            background-color: #e65c00;
+        }
+        .filter-controls .search-input { flex-basis: 40%; }
+        .filter-controls .filter-select { flex-basis: 15%; }
+
+        /* Search Bar specific styling */
+        .search-bar-wrapper {
+            display: flex;
+            flex-basis: 60%;
+            border: 1px solid #ccc;
+            border-radius: 50px;
+            overflow: hidden;
+            background-color: white;
+        }
+        .search-bar-wrapper input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 0;
+            outline: none;
+            font-size: 0.9em;
+            font-family: inherit;
+        }
+        .search-bar-wrapper button {
+            background-color: white;
+            color: #ff6600;
+            border: none;
+            border-left: 1px solid #eee;
+            padding: 0 20px;
+            border-radius: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-family: inherit;
+        }
+        .search-bar-wrapper button:hover {
+            background-color: #f8f8f8;
+            color: #e65c00;
+        }
+
+        /* Property List Table */
+        .property-list {
+            padding: 0;
+            padding-top: 20px;
+        }
+        .property-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: none;
+        }
+        .property-table th, .property-table td {
+            padding: 20px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .property-table th {
+            background-color: #ffffff;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .property-table tr:last-child td {
+            border-bottom: none;
+        }
+        .property-table td {
+            font-size: 0.9em;
+            color: #444;
+            vertical-align: middle;
+        }
+        .property-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+        .property-info { display: flex; align-items: center; gap: 15px; }
+        .property-image {
+            width: 120px; height: 90px;
+            border-radius: 4px;
+            object-fit: contain;
+            position: relative;
+            overflow: hidden;
+        }
+        .property-details .title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        .property-details .location, .property-details .expires {
+            font-size: 0.85em;
+            color: #777;
+        }
+        .property-details .expires {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        /* Status Display Styles */
+        .status-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .circle-green { background-color: #28a745; }
+        .circle-red { background-color: #dc3545; }
+        .circle-grey { background-color: #adb5bd; }
+
+        .status-text {
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .actions {
+            white-space: nowrap;
+        }
+
+        .action-cell {
+            text-align: center;
+        }
+
+        /* Base styles for action buttons in cells */
+        .action-cell button {
+            display: inline-block;
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            font-weight: 500;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            text-decoration: none;
+            font-family: inherit;
+            text-transform: uppercase;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .btn-view {
+            background-color: #ff6600;
+        }
+        .btn-view:hover {
+            background-color: #e65c00;
+        }
+
+        .btn-remove {
+            background-color: #dc3545;
+            padding: 4px 12px;
+            border-radius: 50px;
+        }
+        .btn-remove:hover {
+            background-color: #c82333;
+        }
+
+        /* Style for table links */
+        .property-table td a {
+            color: #333;
+            text-decoration: none;
+        }
+        .property-table td a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .main-content { padding-top: 70px; }
+            .filter-controls { flex-direction: column; align-items: stretch; }
+            .property-table { display: block; overflow-x: auto; }
+            .property-table th,
+            .property-table td {
+                padding: 15px;
+                white-space: nowrap;
+            }
+            .page-title {
+                font-size: 1.6em;
+            }
+        }
+
+        .action-header {
+            text-align: center;
+        }
+
+        /* Welcome Header Styling */
+        .welcome-header {
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .welcome-header h1 {
+            font-size: 2.2em;
+            font-weight: 500;
+            color: #333;
+        }
+
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="info">Renter</div>
-        <div>
-            <a href="roommate_matches.php">Matches</a>
-            <a href="roommate_preferences.php">Find Roommate</a>
-            <a href="login.php?logout=1">Logout</a>
-        </div>
-    </div>
-    <div class="container">
-        <h1>Welcome, <?php echo htmlspecialchars($name); ?>!</h1>
+    <div class="dashboard-container">
+        <!-- Navbar -->
+        <header class="navbar">
+            <div class="navbar-left">
+            </div>
+            <div class="navbar-right">
+                <a href="index.php" class="nav-link">Home</a>
+                <a href="roommate_matches.php" class="nav-link">Matches</a>
+                <a href="roommate_preferences.php" class="nav-link">Find Roommate</a>
+                <a href="login.php?logout=1" class="logout-link">Logout</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Header -->
+            <div class="welcome-header">
+                <h1>Welcome, <?php echo htmlspecialchars($user_name); ?>!</h1>
+            </div>
+
+            <!-- Page Title -->
+            <h2 class="page-title">Bookmarked Properties</h2>
+
+            <!-- Filter Area -->
+            <section class="filter-area">
+                <div class="filter-controls">
+                    <!-- Search Bar Wrapper -->
+                    <div class="search-bar-wrapper">
+                        <input type="text" placeholder="Search bookmarked listings">
+                        <button><i class="fa fa-search"></i></button>
+                    </div>
+                    <!-- Filter Selects -->
+                    <select class="filter-select">
+                        <option>Order By</option>
+                        <option>Date Added</option>
+                        <option>Price (Low to High)</option>
+                        <option>Price (High to Low)</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>Filter By Status</option>
+                        <option>Available</option>
+                        <option>Rented</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Property List -->
+            <section class="property-list">
+                <table class="property-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                            <th>View</th>
+                            <th class="action-header">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($bookmarked_properties as $property): ?>
+                            <tr>
+                                <td>
+                                    <div class="property-info">
+                                        <div class="property-image">
+                                            <img src="<?php echo htmlspecialchars($property['image']); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
+                                        </div>
+                                        <div class="property-details">
+                                            <div class="title"><?php echo htmlspecialchars($property['title']); ?></div>
+                                            <div class="location"><?php echo htmlspecialchars($property['location']); ?></div>
+                                            <div class="expires">Expires on <?php echo htmlspecialchars($property['expires']); ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><?php echo htmlspecialchars($property['category']); ?></td>
+                                <td>
+                                    <div class="status-display">
+                                        <span class="status-circle <?php echo getStatusCircleClass($property['status']); ?>"></span>
+                                        <span class="status-text"><?php echo getDisplayStatusText($property['status']); ?></span>
+                                    </div>
+                                </td>
+                                <td><?php echo htmlspecialchars($property['price']); ?></td>
+                                <td>
+                                    <a href="#">View Listing</a>
+                                </td>
+                                <td class="action-cell">
+                                    <button class="btn-remove">Remove</button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </section>
+        </main>
     </div>
 </body>
 </html>
