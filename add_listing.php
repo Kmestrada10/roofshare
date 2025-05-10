@@ -5,13 +5,13 @@ ini_set('display_errors', 1);
 require_once("config/db.php");
 session_start();
 
-// Check if user is a realtor
+
 if (strtolower($_SESSION['user_type'] ?? '') !== 'realtor') {
     echo "Access denied. Only realtors can add listings.";
     exit;
 }
 
-// Get realtor ID from email
+
 function getRealtorId($db, $email)
 {
     $stmt = $db->prepare("SELECT realtor_id FROM Realtor WHERE email = ?");
@@ -21,9 +21,9 @@ function getRealtorId($db, $email)
 }
 $realtor_id = getRealtorId($db, $_SESSION['user_email']);
 
-// Process form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
+
     $title         = $_POST['title'] ?? '';
     $description   = $_POST['description'] ?? '';
     $price         = $_POST['price'] ?? 0;
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bedrooms      = $_POST['bedrooms'] ?? 0;
     $bathrooms     = $_POST['bathrooms'] ?? 0;
     $max_guests    = $_POST['max_guests'] ?? 1;
-    $amenities     = $_POST['amenities'] ?? []; // Get selected amenities
+    $amenities     = $_POST['amenities'] ?? []; 
     
     // Get address data
     $street        = $_POST['street_address'] ?? '';
@@ -45,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db->beginTransaction();
 
-        // Insert new listing record
         $query = "INSERT INTO Listing 
             (title, description, price, status,
              property_type, bedrooms, bathrooms,
@@ -76,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $listing_id = $db->lastInsertId();
 
-        // Add selected amenities
         if (!empty($amenities)) {
             $amenity_stmt = $db->prepare("INSERT INTO ListingAmenities (listing_id, amenity_id) VALUES (?, ?)");
             foreach ($amenities as $amenity_id) {
@@ -84,10 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Handle file uploads
         if (isset($_FILES['photos'])) {
             $upload_dir = 'uploads/listing_images/';
-            // Ensure upload directory exists and is writable
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
@@ -102,11 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
 
                     if (in_array($file_ext, $allowed_exts)) {
-                        // Generate a unique filename
                         $safe_file_name = uniqid('img_', true) . '_' . preg_replace("/[^a-zA-Z0-9.]/", "", $file_name);
                         $upload_path = $upload_dir . $safe_file_name;
                         
-                        // Debug logging
                         error_log("=== Image Upload Debug ===");
                         error_log("Original filename: " . $file_name);
                         error_log("Safe filename: " . $safe_file_name);
@@ -115,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (move_uploaded_file($tmp_name, $upload_path)) {
                             error_log("File uploaded successfully to: " . $upload_path);
                             
-                            // Store the relative path in the database
                             $photo_stmt->execute([$listing_id, $upload_path, $photo_order]);
                             error_log("Image path stored in database: " . $upload_path);
                             $photo_order++;
@@ -150,21 +143,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Create Property Listing</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/lucide-react.min.js"> --> <!-- Lucide is used via JS below -->
 
-    <!-- REMOVED Cloudinary Upload Widget -->
-    <!-- <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> -->
-  
-    <!-- Add Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
 
     <style>
-        /* Styles for header from listing.css - Global * and body initially omitted */
-        /* body {
-          font-family: "Montserrat", sans-serif; 
-          color: #333; 
-          background-color: white; 
-        } */
+       
 
         .header {
           display: flex;
@@ -272,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           color: white;
         }
 
-        /* Lucide Icons basic styling (actual icons are SVG) */
+   
         .lucide {
             display: inline-block;
             vertical-align: middle;
@@ -300,18 +283,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .custom-orange-button {
-          background-color: #fb923c; /* Tailwind orange-400 */
+          background-color: #fb923c; 
         }
         .custom-orange-button:hover {
-          background-color: #f97316; /* Tailwind orange-500 for hover */
+          background-color: #f97316;
         }
 
         .force-square-shape {
             aspect-ratio: 1 / 1 !important;
-            height: auto !important; /* Attempt to override any fixed height */
+            height: auto !important; 
         }
 
-        /* Google Places Autocomplete Dropdown Styling */
+  
         .pac-container {
             border-radius: 8px !important;
             margin-top: 5px !important;
@@ -346,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="min-h-screen bg-white" style="font-family: 'Montserrat', sans-serif;">
-      <!-- Header from listing.php -->
+    
       <header class="header">
         <div class="search-bar-container">
             <input
@@ -369,18 +352,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </header>
 
-      <!-- Main Content -->
       <main class="max-w-5xl mx-auto px-6 py-8" style="position: relative; z-index: 1;">
         <form method="POST" id="add-listing-form" enctype="multipart/form-data">
           <div class="space-y-8">
-            <!-- Title Section -->
+       
             <div>
               <h1 class="text-3xl font-semibold text-gray-900 mb-2">Create Your Property Listing</h1>
               <p class="text-gray-600">Add details about your property to start hosting</p>
             </div>
             
             <div class="bg-white">
-              <!-- Property Information -->
+         
               <div class="space-y-6">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -425,7 +407,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
               </div>
 
-              <!-- Property Details -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -464,7 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
               </div>
 
-              <!-- Property Features -->
+       
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -490,15 +471,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     />
                   </div>
               </div>
-              
-              <!-- Amenities Section -->
+            
               <div class="pt-8">
                 <label class="block text-lg font-semibold text-gray-900 mb-4">
                   Amenities
                 </label>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
                   <?php
-                    if (isset($db)) { // Check if $db is available
+                    if (isset($db)) { 
                       $amenities_stmt = $db->query("SELECT amenity_id, name FROM Amenities ORDER BY name");
                       while ($amenity = $amenities_stmt->fetch(PDO::FETCH_ASSOC)) {
                           echo '<div class="flex items-center">';
@@ -513,7 +493,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
               </div>
 
-              <!-- Photo Upload Section -->
+           
               <div class="pt-8">
                 <label class="block text-lg font-semibold text-gray-900 mb-4">
                   Upload Photos
@@ -530,23 +510,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   </label>
                   <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="hidden">
                   <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB (Max 5 files recommended)</p>
-                   <!-- Container for photo previews -->
+                   
                   <div id="photo-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      <!-- Photo previews will be dynamically inserted here -->
+                   
                   </div>
                 </div>
               </div>
               
-              <!-- Map Placeholder -->
+     
               <div class="pt-8">
                   <label class="block text-lg font-semibold text-gray-900 mb-4">Property Location on Map</label>
                   <div id="map-add" style="height: 400px; border-radius: 8px;" class="border border-gray-300">
-                      <!-- Map will be initialized here by Google Maps JS -->
+                    
                   </div>
               </div>
 
 
-              <!-- Submit Button -->
               <div class="pt-10 text-right">
                 <button type="submit" class="cta-button">
                   Create Listing
@@ -558,7 +537,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </main>
     </div>
 
-    <!-- Scripts -->
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
       lucide.createIcons();
@@ -567,7 +546,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
       let map, marker, autocomplete;
       function initMapAndAutocomplete() {
-        const defaultCenter = { lat: 40.0, lng: -75.0 }; // You might want to set a more relevant default
+        const defaultCenter = { lat: 40.0, lng: -75.0 }; 
         map = new google.maps.Map(document.getElementById('map-add'), {
             center: defaultCenter,
             zoom: 12
@@ -617,25 +596,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
       }
 
-      // --- REMOVE Cloudinary Upload Widget Configuration and related code --- 
-      // const cloudName = "daeqajxe0"; 
-      // const uploadPreset = "roofshare";
-      // if (typeof cloudinary !== 'undefined') { ... } else { console.error('Cloudinary library not loaded.'); }
-      // --- END REMOVE Cloudinary --- 
-
-      // --- ADD JavaScript for local file preview --- 
+      
+   
       const photoInput = document.getElementById('photos');
       const previewContainer = document.getElementById('photo-preview');
       const dropZone = document.getElementById('drop-zone');
-      let selectedFiles = []; // To keep track of files if we want to implement more complex removal
-
-      // Prevent default drag behaviors
+      let selectedFiles = []; 
+   
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
       });
 
-      // Highlight drop zone when item is dragged over it
+    
       ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, highlight, false);
       });
@@ -644,7 +617,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         dropZone.addEventListener(eventName, unhighlight, false);
       });
 
-      // Handle dropped files
+    
       dropZone.addEventListener('drop', handleDrop, false);
 
       function preventDefaults (e) {
@@ -671,7 +644,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           alert('You can select a maximum of 5 images. The first 5 will be shown.');
         }
         
-        // Convert FileList to Array and take first 5 files
+        
         const validFiles = Array.from(files).slice(0, 5).filter(file => {
           if (!file.type.startsWith('image/')) {
             alert(`File ${file.name} is not an image and will not be previewed or uploaded.`);
@@ -680,7 +653,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           return true;
         });
 
-        // If we already have files, append the new ones (up to 5 total)
+     
         if (selectedFiles.length > 0) {
           const remainingSlots = 5 - selectedFiles.length;
           if (remainingSlots > 0) {
@@ -690,7 +663,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           selectedFiles = validFiles;
         }
 
-        // Update the file input to include all selected files
+  
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
         photoInput.files = dataTransfer.files;
@@ -719,7 +692,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             removeBtn.onclick = () => {
               selectedFiles = selectedFiles.filter((_, i) => i !== index);
-              // Update the file input to reflect the removed file
+     
               const dataTransfer = new DataTransfer();
               selectedFiles.forEach(file => dataTransfer.items.add(file));
               photoInput.files = dataTransfer.files;
@@ -742,26 +715,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!photoInput) console.error('Photo input #photos not found.');
         if (!previewContainer) console.error('Photo preview container #photo-preview not found.');
       }
-      // --- END JavaScript for local file preview ---
-
-      // Prevent form submission on enter key in most inputs
+   
       const form = document.getElementById('add-listing-form');
       if (form) {
         form.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && e.target.type !== 'textarea') { // Allow enter in textareas
+          if (e.key === 'Enter' && e.target.type !== 'textarea') { 
             e.preventDefault();
-            // return false; // Not strictly necessary with preventDefault
+
           }
         });
       }
 
-      // Wait for the Maps script to load, then init
+     
       window.addEventListener('load', () => {
         if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
           initMapAndAutocomplete();
         } else {
           console.error('Google Maps API not loaded by window.load.');
-          // Fallback or retry mechanism could be added here
+    
         }
       });
     </script>
@@ -776,7 +747,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             autocomplete.addListener('place_changed', function() {
                 const place = autocomplete.getPlace();
                 if (place.geometry) {
-                    // Validate city selection
                     let isCity = false;
                     for (const component of place.address_components) {
                         if (component.types.includes('locality')) {
@@ -791,7 +761,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         return;
                     }
 
-                    // Store the coordinates for the search
                     searchInput.dataset.lat = place.geometry.location.lat();
                     searchInput.dataset.lng = place.geometry.location.lng();
                 }
@@ -810,7 +779,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Initialize autocomplete when the page loads
         window.onload = function() {
             initAutocomplete();
         };
