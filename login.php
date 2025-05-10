@@ -78,11 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['verification'] = $user['verification_status'] ?? '';
 
                 // Redirect directly to the corresponding dashboard
-                if ($type === 'admin') {
+                if (strtolower($type) === 'admin') {
                     header("Location: admin_dashboard.php");
-                } elseif ($type === 'realtor') {
+                } elseif (strtolower($type) === 'realtor') {
                     header("Location: realtor_dashboard.php");
-                } elseif ($type === 'renter') {
+                } elseif (strtolower($type) === 'renter') {
                     header("Location: renter_dashboard.php");
                 } else {
                     $error = "Unknown user type.";

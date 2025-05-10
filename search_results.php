@@ -360,24 +360,19 @@ $offset = ($page - 1) * $items_per_page;
 </head>
 <body>
     <header class="header">
-        <div class="search-bar-container">
-            <input
-                id="searchInput"
-                class="search-input"
-                type="text"
-                placeholder="Enter an address, neighborhood, city, or ZIP code"
-                aria-label="Search for properties"
-            >
-            <button class="search-button" onclick="handleSearch()" aria-label="Submit search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                </svg>
-            </button>
-        </div>
         <div class="header-links">
             <a href="index.php" class="header-link">Home</a>
-            <?php if (isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter'): ?>
-                <a href="renter_dashboard.php" class="header-link">My Bookmarks</a>
+            <?php if (isset($_SESSION['user_type'])): ?>
+                <?php if (strtolower($_SESSION['user_type']) === 'renter'): ?>
+                    <a href="renter_dashboard.php" class="header-link">Dashboard</a>
+                <?php elseif (strtolower($_SESSION['user_type']) === 'admin'): ?>
+                    <a href="admin_dashboard.php" class="header-link">Dashboard</a>
+                <?php elseif (strtolower($_SESSION['user_type']) === 'realtor'): ?>
+                    <a href="realtor_dashboard.php" class="header-link">Dashboard</a>
+                <?php endif; ?>
+            <?php else: ?>
+                <a href="login.php" class="header-link">Login</a>
+                <a href="login.php?register=1" class="header-link">Sign Up</a>
             <?php endif; ?>
         </div>
     </header>

@@ -12,7 +12,7 @@ if (isset($_GET['logout'])) {
 require_once("config/db.php"); 
 
 
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'Realtor') {
+if (!isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'realtor') {
     header("Location: login.php");
     exit();
 }
@@ -46,7 +46,8 @@ $verification = $user['verification_status'] ?? '';
                     </div>
                 </div>
                 <nav class="dashboard-nav">
-                    <a href="?logout=1" class="logout-btn">Logout</a>
+                    <a href="index.php" class="header-link">Home</a>
+                    <a href="index.php?logout=1" class="header-link">Logout</a>
                 </nav>
             </div>
         </header>

@@ -160,8 +160,14 @@ try {
 <body>
     <header class="header">
         <div class="header-links">
-            <?php if (isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter'): ?>
-                <a href="renter_dashboard.php" class="header-link">My Bookmarks</a>
+            <?php if (isset($_SESSION['user_type'])): ?>
+                <?php if (strtolower($_SESSION['user_type']) === 'renter'): ?>
+                    <a href="renter_dashboard.php" class="header-link">Dashboard</a>
+                <?php elseif (strtolower($_SESSION['user_type']) === 'admin'): ?>
+                    <a href="admin_dashboard.php" class="header-link">Dashboard</a>
+                <?php elseif (strtolower($_SESSION['user_type']) === 'realtor'): ?>
+                    <a href="realtor_dashboard.php" class="header-link">Dashboard</a>
+                <?php endif; ?>
             <?php else: ?>
                 <a href="login.php" class="header-link">Login</a>
                 <a href="login.php?register=1" class="header-link">Sign Up</a>

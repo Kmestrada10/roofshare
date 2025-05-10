@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 session_start();
 require_once("config/db.php");
 
-if (!isset($_SESSION['user_email']) || $_SESSION['user_type'] !== 'Admin') {
+if (!isset($_SESSION['user_email']) || strtolower($_SESSION['user_type']) !== 'admin') {
     header("Location: login.php");
     exit();
 }
@@ -472,8 +472,8 @@ if ($role === 'Moderator') {
             <div class="navbar-left">
             </div>
             <div class="navbar-right">
-                <a href="index.php" class="nav-link">Home</a>
-                <a href="index.php?logout=1" class="logout-link">Logout</a>
+                <a href="index.php" class="header-link">Home</a>
+                <a href="index.php?logout=1" class="header-link">Logout</a>
             </div>
         </header>
 
