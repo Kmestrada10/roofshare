@@ -28,7 +28,6 @@ if (!$realtor_id) {
     error_log("No realtor_id found for email: " . $email);
 }
 
-// Fetch realtor's listings
 try {
     $stmt = $db->prepare("
         SELECT 
@@ -44,15 +43,10 @@ try {
     $stmt->execute([$realtor_id]);
     $listings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format the properties
     foreach ($listings as &$property) {
-        // Format the category
         $property['category'] = ucfirst($property['property_type']);
-        // Format the location
         $property['location'] = $property['city'] . ', ' . $property['state'];
-        // Format the price
         $property['price'] = '$' . number_format($property['price']);
-        // Format the expiry date
         $property['expiry_date'] = date('M d, Y', strtotime($property['created_at'] . ' +30 days'));
     }
 } catch (PDOException $e) {
@@ -60,7 +54,6 @@ try {
     $listings = [];
 }
 
-// Function to get status circle CSS class
 function getStatusCircleClass($status) {
     switch (strtolower($status)) {
         case 'available':
@@ -72,7 +65,6 @@ function getStatusCircleClass($status) {
     }
 }
 
-// Function to get display text for status
 function getDisplayStatusText($status) {
     switch (strtolower($status)) {
         case 'available':
@@ -90,14 +82,11 @@ function getDisplayStatusText($status) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realtor Dashboard | RoofShare</title>
-    <!-- Google Fonts - Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Basic Reset and Font */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Montserrat", sans-serif;
@@ -107,21 +96,18 @@ function getDisplayStatusText($status) {
         }
         a { text-decoration: none; color: inherit; }
 
-        /* Dashboard Container */
         .dashboard-container {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             padding: 20px 150px 30px;
             background-color: #ffffff;
         }
 
-        /* Navbar */
         .navbar {
             background-color: #ffffff;
             padding: 0 20px;
@@ -158,7 +144,6 @@ function getDisplayStatusText($status) {
             border-radius: 4px;
         }
 
-        /* Page Title */
         .page-title {
             padding: 0;
             padding-top: 25px;
@@ -169,7 +154,6 @@ function getDisplayStatusText($status) {
             margin-bottom: 15px;
         }
 
-        /* Filter/Action Area */
         .filter-area {
             padding: 25px 0;
             background-color: #ffffff;
@@ -220,7 +204,6 @@ function getDisplayStatusText($status) {
         .filter-controls .search-input { flex-basis: 40%; }
         .filter-controls .filter-select { flex-basis: 15%; }
 
-        /* Search Bar specific styling */
         .search-bar-wrapper {
             display: flex;
             flex-basis: 60%;
@@ -258,7 +241,6 @@ function getDisplayStatusText($status) {
             color: #e65c00;
         }
 
-        /* Property List Table */
         .property-list {
             padding: 0;
             padding-top: 20px;
@@ -323,7 +305,6 @@ function getDisplayStatusText($status) {
             color: #999;
         }
 
-        /* Status Display Styles */
         .status-display {
             display: flex;
             align-items: center;
@@ -352,7 +333,6 @@ function getDisplayStatusText($status) {
             text-align: center;
         }
 
-        /* Base styles for action buttons in cells */
         .action-cell button {
             display: inline-block;
             padding: 8px 15px;
@@ -395,7 +375,6 @@ function getDisplayStatusText($status) {
             background-color: #c82333;
         }
 
-        /* Style for table links */
         .property-table td a {
             color: #333;
             text-decoration: none;
@@ -404,7 +383,6 @@ function getDisplayStatusText($status) {
             text-decoration: underline;
         }
 
-        /* Responsive Adjustments */
         @media (max-width: 768px) {
             .main-content { padding-top: 70px; }
             .filter-controls { flex-direction: column; align-items: stretch; }
@@ -423,7 +401,6 @@ function getDisplayStatusText($status) {
             text-align: center;
         }
 
-        /* Welcome Header Styling */
         .welcome-header {
             padding-bottom: 15px;
             margin-bottom: 15px;
@@ -434,7 +411,6 @@ function getDisplayStatusText($status) {
             color: #333;
         }
 
-        /* Verification Status Styling */
         .verification-status {
             display: inline-block;
             padding: 4px 12px;
@@ -460,7 +436,6 @@ function getDisplayStatusText($status) {
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Navbar -->
         <header class="navbar">
             <div class="navbar-left">
                     </div>
@@ -471,9 +446,7 @@ function getDisplayStatusText($status) {
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Welcome Header -->
             <div class="welcome-header">
                 <h1>Welcome, <?php echo htmlspecialchars($name); ?>! 
                     <?php if ($verification): ?>
@@ -484,18 +457,14 @@ function getDisplayStatusText($status) {
                 </h1>
                 </div>
 
-            <!-- Page Title -->
             <h2 class="page-title">Your Listings</h2>
 
-            <!-- Filter Area -->
             <section class="filter-area">
                 <div class="filter-controls">
-                    <!-- Search Bar Wrapper -->
                     <div class="search-bar-wrapper">
                         <input type="text" placeholder="Search your listings">
                         <button><i class="fa fa-search"></i></button>
                     </div>
-                    <!-- Filter Selects -->
                     <select class="filter-select">
                         <option>Order By</option>
                         <option>Date Added</option>
@@ -510,7 +479,6 @@ function getDisplayStatusText($status) {
                 </div>
             </section>
 
-            <!-- Property List -->
             <section class="property-list">
                 <table class="property-table">
                     <thead>
@@ -587,7 +555,6 @@ function getDisplayStatusText($status) {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Remove the row from the table
                     const row = document.querySelector(`button[onclick="removeListing(${listingId})"]`).closest('tr');
                     row.remove();
                 } else {
