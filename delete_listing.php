@@ -2,22 +2,18 @@
 session_start();
 require_once("config/db.php");
 
-// Set content type to JSON
 header('Content-Type: application/json');
 
-// Enable error logging
 error_log("Delete listing request received");
 error_log("POST data: " . print_r($_POST, true));
 error_log("Session data: " . print_r($_SESSION, true));
 
-// Check if user is logged in and is a realtor
 if (!isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'realtor') {
     error_log("Access denied - User not logged in as realtor");
     echo json_encode(['success' => false, 'message' => 'You must be logged in as a realtor to delete listings']);
     exit;
 }
 
-// Check if listing_id is provided
 if (!isset($_POST['listing_id'])) {
     error_log("No listing ID provided in request");
     echo json_encode(['success' => false, 'message' => 'No listing ID provided']);
@@ -29,7 +25,6 @@ $realtor_email = $_SESSION['user_email'];
 error_log("Attempting to delete listing ID: " . $listing_id . " for realtor: " . $realtor_email);
 
 try {
-    // First verify that the listing belongs to this realtor
     $check_stmt = $db->prepare("
         SELECT l.listing_id 
         FROM Listing l 
@@ -44,11 +39,9 @@ try {
         exit;
     }
 
-    // Begin transaction
     $db->beginTransaction();
     error_log("Transaction started");
 
-    // Delete related records first
     $db->prepare("DELETE FROM ListingPhoto WHERE listing_id = ?")->execute([$listing_id]);
     error_log("Deleted listing photos");
     
@@ -58,7 +51,6 @@ try {
     $db->prepare("DELETE FROM Saves WHERE listing_id = ?")->execute([$listing_id]);
     error_log("Deleted listing saves");
     
-    // Finally delete the listing
     $delete_stmt = $db->prepare("DELETE FROM Listing WHERE listing_id = ?");
     $result = $delete_stmt->execute([$listing_id]);
     error_log("Deleted main listing record");
