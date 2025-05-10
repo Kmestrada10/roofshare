@@ -81,6 +81,9 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -91,12 +94,13 @@ try {
     <header class="header">
         <div class="search-bar-container">
             <input
+                id="searchInput"
                 class="search-input"
                 type="text"
                 placeholder="Enter an address, neighborhood, city, or ZIP code"
                 aria-label="Search for properties"
             >
-            <button class="search-button" aria-label="Submit search">
+            <button class="search-button" onclick="handleSearch()" aria-label="Submit search">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                 </svg>
@@ -216,6 +220,55 @@ try {
     </main>
 
     <script>
+        function initAutocomplete() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = new google.maps.places.Autocomplete(searchInput, {
+                types: ['(cities)'],
+                fields: ['geometry', 'name', 'address_components']
+            });
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    // Validate city selection
+                    let isCity = false;
+                    for (const component of place.address_components) {
+                        if (component.types.includes('locality')) {
+                            isCity = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isCity) {
+                        alert('Please select a city, not a state or country');
+                        searchInput.value = '';
+                        return;
+                    }
+
+                    // Store the coordinates for the search
+                    searchInput.dataset.lat = place.geometry.location.lat();
+                    searchInput.dataset.lng = place.geometry.location.lng();
+                }
+            });
+        }
+
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const lat = searchInput.dataset.lat;
+            const lng = searchInput.dataset.lng;
+
+            if (searchInput.value.trim() !== '' && lat && lng) {
+                window.location.href = `search_results.php?location=${encodeURIComponent(searchInput.value)}&latitude=${lat}&longitude=${lng}`;
+            } else {
+                alert('Please select a city from the dropdown');
+            }
+        }
+
+        // Initialize autocomplete when the page loads
+        window.onload = function() {
+            initAutocomplete();
+        };
+
         document.querySelector('.bookmark-button')?.addEventListener('click', async function(event) {
             if (this.disabled) return;
             
@@ -273,6 +326,38 @@ try {
         .bookmark-button svg {
             width: 20px;
             height: 20px;
+        }
+
+        /* Google Places Autocomplete Dropdown Styling */
+        .pac-container {
+            border-radius: 8px !important;
+            margin-top: 5px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ddd !important;
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
+        .pac-item {
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            border-top: none !important;
+        }
+
+        .pac-item:first-child {
+            border-top: none !important;
+        }
+
+        .pac-item:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .pac-item-query {
+            font-size: 0.9rem !important;
+            color: #333 !important;
+        }
+
+        .pac-matched {
+            font-weight: 500 !important;
         }
 
         /* Image gallery styling */
