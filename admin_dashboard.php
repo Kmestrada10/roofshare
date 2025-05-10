@@ -136,72 +136,30 @@ if ($role === 'Moderator') {
         .navbar-left {
             display: flex;
             align-items: center;
-            gap: 30px;
         }
         .navbar-logo {
             font-size: 1.5em;
             font-weight: 700;
             color: #333;
         }
-        .navbar-links ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar-links .nav-link a {
-            color: #555;
-            font-weight: 500;
-            font-size: 0.95rem;
-            padding: 8px 12px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            display: inline-block;
-            font-family: inherit;
-        }
-        .navbar-links .nav-link a:hover {
-            background-color: rgba(0,0,0,0.05);
-        }
-        .navbar-links .nav-link.active a {
-            background-color: transparent;
-            color: #333;
-        }
-
         .navbar-right {
             display: flex;
             align-items: center;
             gap: 20px;
-            margin-left: auto;
         }
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .user-menu .user-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: #ffe8d6;
-            color: #ff6600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        .user-menu .user-name {
+        .nav-link {
+            font-size: 0.95em;
+            color: #555;
             font-weight: 500;
-            font-size: 0.9em;
+            padding: 8px 16px;
+            border-radius: 4px;
         }
-        .user-menu .logout-link {
-            font-size: 0.9em;
-            color: #777;
-            margin-left: 5px;
-        }
-        .user-menu .logout-link:hover {
-            color: #ff6600;
-            text-decoration: underline;
+        .logout-link {
+            font-size: 0.95em;
+            color: #555;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
         }
 
         /* Main Content Area */
@@ -512,19 +470,10 @@ if ($role === 'Moderator') {
         <!-- Navbar -->
         <header class="navbar">
             <div class="navbar-left">
-                <nav class="navbar-links">
-                    <ul>
-                        <li class="nav-link active"><a href="#">Realtor Management</a></li>
-                        <li class="nav-link"><a href="#">Reported Accounts</a></li>
-                    </ul>
-                </nav>
             </div>
             <div class="navbar-right">
-                <div class="user-menu">
-                    <div class="user-icon"><i class="fa fa-user"></i></div>
-                    <span class="user-name"><?php echo htmlspecialchars($name); ?></span>
-                    <a href="login.php?logout=1" class="logout-link">(Logout)</a>
-                </div>
+                <a href="index.php" class="nav-link">Home</a>
+                <a href="login.php?logout=1" class="logout-link">Logout</a>
             </div>
         </header>
 
