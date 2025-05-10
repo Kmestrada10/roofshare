@@ -111,6 +111,9 @@ $listings = [
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
+    
     <!-- Main CSS -->
     <link rel="stylesheet" href="assets/css/landing.css">
     
@@ -151,6 +154,61 @@ $listings = [
             grid-template-columns: repeat(3, 1fr);
             column-gap: 20px;
             row-gap: 40px;
+        }
+
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 8px !important;
+            margin-top: 5px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ddd !important;
+            font-family: 'Montserrat', sans-serif !important;
+            width: 650px !important; /* Decreased width */
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            position: absolute !important;
+        }
+
+        /* Position the container relative to the search bar */
+        .search-bar-container {
+            position: relative !important;
+        }
+
+        /* Remove the previous centering attempt */
+        .pac-container:before {
+            display: none !important;
+        }
+
+        .pac-item {
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            border-top: none !important;
+        }
+
+        .pac-item:first-child {
+            border-top: none !important;
+        }
+
+        .pac-item:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .pac-icon {
+            display: none !important;
+        }
+
+        .pac-item-query {
+            font-size: 0.9rem !important;
+            color: #333 !important;
+        }
+
+        .pac-matched {
+            font-weight: 500 !important;
+        }
+
+        /* Hide "Powered by Google" text */
+        .pac-container:after {
+            display: none !important;
         }
     </style>
 </head>
@@ -217,14 +275,47 @@ $listings = [
     </section>
 
     <script>
+        function initAutocomplete() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = new google.maps.places.Autocomplete(searchInput, {
+                types: ['(cities)'],
+                fields: ['geometry', 'name', 'address_components']
+            });
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    // Validate city selection
+                    let isCity = false;
+                    for (const component of place.address_components) {
+                        if (component.types.includes('locality')) {
+                            isCity = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isCity) {
+                        alert('Please select a city, not a state or country');
+                        searchInput.value = '';
+                        return;
+                    }
+                }
+            });
+        }
+
         function handleSearch() {
             const searchInput = document.getElementById('searchInput');
             if (searchInput.value.trim() !== '') {
-                window.location.href = 'login.php?redirect=search&q=' + encodeURIComponent(searchInput.value);
+                window.location.href = 'search_results.php?location=' + encodeURIComponent(searchInput.value);
             } else {
                 alert('Please enter a search term');
             }
         }
+
+        // Initialize autocomplete when the page loads
+        window.onload = function() {
+            initAutocomplete();
+        };
     </script>
 </body>
 </html>
