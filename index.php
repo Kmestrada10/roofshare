@@ -159,7 +159,7 @@ $listings = [
         <!-- Auth Navigation (Top Right) -->
         <div class="auth-links">
             <a href="login.php">Log In</a>
-            <a href="register.php">Sign Up</a>
+            <a href="login.php?view=register">Sign Up</a>
         </div>
     </header>
 
