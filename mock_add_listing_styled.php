@@ -8,12 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/lucide-react.min.js">
     <style>
-        /* Styles for header from listing.css - Global * and body initially omitted */
-        /* body {
-          font-family: "Montserrat", sans-serif; 
-          color: #333; 
-          background-color: white; 
-        } */
+       
 
         .header {
           display: flex;
@@ -123,7 +118,6 @@
           font-weight: bold;
         }
 
-        /* Lucide Icons basic styling (actual icons are SVG) */
         .lucide {
             display: inline-block;
             vertical-align: middle;
@@ -151,21 +145,21 @@
         }
 
         .custom-orange-button {
-          background-color: #fb923c; /* Tailwind orange-400 */
+          background-color: #fb923c; 
         }
         .custom-orange-button:hover {
-          background-color: #f97316; /* Tailwind orange-500 for hover */
+          background-color: #f97316; 
         }
 
         .force-square-shape {
             aspect-ratio: 1 / 1 !important;
-            height: auto !important; /* Attempt to override any fixed height */
+            height: auto !important; 
         }
     </style>
 </head>
 <body>
     <div class="min-h-screen bg-white" style="font-family: 'Montserrat', sans-serif;">
-      <!-- Header from listing.php -->
+    
       <header class="header">
         <div class="search-bar-container">
             <input
@@ -187,17 +181,17 @@
         </div>
     </header>
 
-      <!-- Main Content -->
+  
       <main class="max-w-5xl mx-auto px-6 py-8" style="position: relative; z-index: 1;">
         <div class="space-y-8">
-          <!-- Title Section -->
+       
           <div>
             <h1 class="text-3xl font-semibold text-gray-900 mb-2">Create Your Property Listing</h1>
             <p class="text-gray-600">Add details about your property to start hosting</p>
           </div>
           
           <div class="bg-white">
-            <!-- Property Information -->
+           
             <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -244,7 +238,7 @@
               </div>
             </div>
 
-            <!-- Property Details -->
+           
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -330,7 +324,7 @@
               </div>
             </div>
 
-            <!-- Photos Upload -->
+           
             <div class="pt-8">
               <h2 class="text-xl font-medium text-gray-900 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera inline w-5 h-5 mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -344,7 +338,7 @@
                 <p class="text-xs text-gray-400 mt-2">Maximum 10 photos, 5MB each</p>
               </div>
               
-              <!-- Photo Preview Grid -->
+              
               <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="force-square-shape bg-gray-100 rounded-lg border flex items-center justify-center">
                   <div class="text-center text-gray-400">
@@ -367,7 +361,7 @@
               </div>
             </div>
 
-            <!-- Amenities -->
+          
             <div class="pt-8">
               <h2 class="text-xl font-medium text-gray-900 mb-4">What this place offers</h2>
               <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -430,7 +424,7 @@
               </div>
             </div>
 
-            <!-- Action Button -->
+         
             <div class="pt-8">
               <button
                 type="button"
