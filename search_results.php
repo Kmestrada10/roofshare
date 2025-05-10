@@ -285,6 +285,77 @@ $offset = ($page - 1) * $items_per_page;
             background-color: #e65c00;
         }
 
+        /* Google Maps Attribution Styling */
+        .gmnoprint, .gm-style-cc {
+            display: none !important;
+        }
+        
+        /* Keep the Google logo but make it smaller and more subtle */
+        .gm-style a[href^="https://maps.google.com/maps"] {
+            display: none !important;
+        }
+        
+        /* Style the attribution container */
+        .gm-style-iw {
+            padding: 0 !important;
+        }
+        
+        .gm-style-iw-d {
+            overflow: hidden !important;
+            padding: 0 !important;
+        }
+        
+        .gm-style-iw-c {
+            padding: 0 !important;
+            max-width: 300px !important;
+        }
+        
+        /* Remove the close button */
+        .gm-ui-hover-effect {
+            display: none !important;
+        }
+
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 8px !important;
+            margin-top: 5px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ddd !important;
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
+        .pac-item {
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            border-top: none !important;
+        }
+
+        .pac-item:first-child {
+            border-top: none !important;
+        }
+
+        .pac-item:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .pac-icon {
+            display: none !important;
+        }
+
+        .pac-item-query {
+            font-size: 0.9rem !important;
+            color: #333 !important;
+        }
+
+        .pac-matched {
+            font-weight: 500 !important;
+        }
+
+        /* Hide "Powered by Google" text */
+        .pac-container:after {
+            display: none !important;
+        }
+
     </style>
 </head>
 <body>
