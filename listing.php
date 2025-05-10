@@ -171,18 +171,9 @@ try {
                     </div>
                 <?php endif; ?>
             </div>
-            <?php
-            ?>
             <form action="save_listing.php" method="post" style="display: inline;">
                 <input type="hidden" name="listing_id" value="<?php echo $property_id; ?>">
                 <input type="hidden" name="action" value="<?php echo $is_saved ? 'unsave' : 'save'; ?>">
-                <?php
-                // Debug output
-                $is_renter = isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter';
-                error_log("Session debug - user_id: " . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'not set'));
-                error_log("Session debug - user_type: " . (isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'not set'));
-                error_log("Session debug - is_renter: " . ($is_renter ? 'true' : 'false'));
-                ?>
                 <button type="button" class="bookmark-button <?php echo $is_saved ? 'saved' : ''; ?>">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
@@ -260,6 +251,10 @@ try {
                 <div class="description-text">
                     <?php echo nl2br(htmlspecialchars($property['description'])); ?>
                 </div>
+
+                <div class="report-section">
+                    <a href="#" class="report-link" onclick="openReportModal(); return false;">Report this listing</a>
+                </div>
             </div>
 
             <div class="booking-section">
@@ -275,6 +270,20 @@ try {
             </div>
         </div>
     </main>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeReportModal()">&times;</span>
+            <h2>Report Listing</h2>
+            <p class="modal-subtitle">Describe what's wrong with this listing</p>
+            <form class="report-form" id="reportForm" onsubmit="submitReport(event)">
+                <input type="hidden" name="listing_id" value="<?php echo $property_id; ?>">
+                <textarea name="description" placeholder="Please describe why you are reporting this listing..." required></textarea>
+                <button type="submit">Submit Report</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         function initAutocomplete() {
@@ -370,6 +379,49 @@ try {
                 });
             }
         };
+
+        // Report Modal Functions
+        function openReportModal() {
+            document.getElementById('reportModal').style.display = 'flex';
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target === modal) {
+                closeReportModal();
+            }
+        }
+
+        async function submitReport(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('report_listing.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeReportModal();
+                    form.reset();
+                } else {
+                    alert(data.message || 'An error occurred while submitting the report');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the report');
+            }
+        }
     </script>
     <style>
         .bookmark-button {
@@ -523,6 +575,114 @@ try {
 
         .warning-message i {
             color: #856404;
+        }
+
+        /* Report Section Styles */
+        .report-section {
+            margin-top: 40px;
+        }
+
+        .report-link {
+            color: #dc3545;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .report-link:hover {
+            color: #c82333;
+            text-decoration: underline;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            font-weight: 500;
+        }
+
+        .modal-subtitle {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .report-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .report-form textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .report-form textarea:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+        }
+
+        .report-form button {
+            padding: 12px 24px;
+            background-color: #ff8c00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .report-form button:hover {
+            background-color: #ff8c00;
         }
     </style>
 </body>

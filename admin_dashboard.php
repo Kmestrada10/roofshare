@@ -82,10 +82,8 @@ if ($role === 'Administrator') {
     $stmt->execute($params);
     $pending_realtors = $stmt->fetchAll();
     
-    // Commented out reported accounts section
-    /*
+    // Get reported accounts
     $reported_accounts = $db->query("SELECT report_id, realtor_id, description, strikes FROM ReportedAccount ORDER BY created_at DESC")->fetchAll();
-    */
 }
 
 if ($role === 'Moderator') {
@@ -552,7 +550,7 @@ if ($role === 'Moderator') {
                     </table>
                 </section>
 
-                <!-- Commented out Reported Accounts Section
+                <!-- Reported Accounts Section -->
                 <h2 class="page-title" style="margin-top: 40px;">Reported Accounts</h2>
                 <section class="property-list">
                     <table class="property-table">
@@ -581,7 +579,6 @@ if ($role === 'Moderator') {
                         </tbody>
                     </table>
                 </section>
-                -->
 
             <?php elseif ($role === 'Moderator'): ?>
                 <!-- Moderator View -->
