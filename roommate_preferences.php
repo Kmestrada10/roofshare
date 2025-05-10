@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 session_start();
 require_once("config/db.php");
 
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'Renter') {
+if (!isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'renter') {
     header("Location: login.php");
     exit();
 }
