@@ -73,7 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($user && password_verify($password, $user['password_hash'])) {
                 $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_type'] = ucfirst($type);
+                $_SESSION['user_type'] = strtolower($type);
+                $_SESSION['user_id'] = $user[strtolower($type) . '_id'];
                 $_SESSION['verification'] = $user['verification_status'] ?? '';
 
                 // Redirect directly to the corresponding dashboard

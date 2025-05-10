@@ -5,64 +5,57 @@ error_reporting(E_ALL);
 session_start();
 require_once("config/db.php");
 
-if ($_SESSION['user_type'] !== 'Renter') {
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'renter') {
     header("Location: login.php");
     exit();
 }
 
+$renter_id = $_SESSION['user_id'];
 $email = $_SESSION['user_email'];
+
+// Get renter name
 $stmt = $db->prepare("SELECT name FROM Renter WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 $name = $user['name'] ?? 'Renter';
 
-// Sample bookmarked property data (replace with actual data fetching later)
-$bookmarked_properties = [
-    [
-        'id' => 1,
-        'title' => 'Property with vertical slider',
-        'location' => 'Jersey City, Greenville',
-        'expires' => '2017-12-17',
-        'category' => 'Houses, Sales',
-        'status' => 'Available',
-        'price' => '$ 86,000',
-        'featured' => true,
-        'image' => 'assets/images/apartment-placeholder.jpg'
-    ],
-    [
-        'id' => 2,
-        'title' => 'Apartment with Subunits',
-        'location' => 'Jersey City, Greenville',
-        'expires' => '2017-02-17',
-        'category' => 'Apartments, Sales',
-        'status' => 'Available',
-        'price' => '$ 999',
-        'featured' => true,
-        'image' => 'assets/images/apartment-placeholder.jpg'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Villa On Washington Ave',
-        'location' => 'New York, West Side',
-        'expires' => '2017-10-15',
-        'category' => 'Villas, Sales',
-        'status' => 'Rented',
-        'price' => '$ 5,500,000',
-        'featured' => false,
-        'image' => 'assets/images/apartment-placeholder.jpg'
-    ],
-    [
-        'id' => 4,
-        'title' => 'Downtown Studio',
-        'location' => 'Metropolis, Downtown',
-        'expires' => '2024-08-01',
-        'category' => 'Studio, Rent',
-        'status' => 'Available',
-        'price' => '$ 1,200 / mo',
-        'featured' => false,
-        'image' => 'assets/images/apartment-placeholder.jpg'
-    ]
-];
+// Fetch bookmarked properties with all necessary details
+try {
+    // Now get the full details
+    $stmt = $db->prepare("
+        SELECT 
+            l.*,
+            s.saved_at as saved_date,
+            COALESCE(lp.photo_url, 'assets/images/apartment-placeholder.jpg') as image
+        FROM Saves s
+        INNER JOIN Listing l ON s.listing_id = l.listing_id
+        LEFT JOIN (
+            SELECT listing_id, photo_url 
+            FROM ListingPhoto 
+            WHERE photo_order = 1
+        ) lp ON l.listing_id = lp.listing_id
+        WHERE s.renter_id = ?
+        ORDER BY s.saved_at DESC
+    ");
+    $stmt->execute([$renter_id]);
+    $bookmarked_properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Format the properties
+    foreach ($bookmarked_properties as &$property) {
+        // Format the category
+        $property['category'] = ucfirst($property['property_type']);
+        // Format the location
+        $property['location'] = $property['city'] . ', ' . $property['state'];
+        // Format the price
+        $property['price'] = '$' . number_format($property['price']);
+        // Format the expiry date
+        $property['expiry_date'] = date('M d, Y', strtotime($property['created_at'] . ' +30 days'));
+    }
+} catch (PDOException $e) {
+    error_log("Error fetching bookmarked properties: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
+    $bookmarked_properties = [];
+}
 
 // Function to get status circle CSS class
 function getStatusCircleClass($status) {
@@ -87,7 +80,6 @@ function getDisplayStatusText($status) {
             return ucfirst(strtolower($status));
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -109,8 +101,23 @@ function getDisplayStatusText($status) {
             font-family: "Montserrat", sans-serif;
             color: #333;
             background-color: #f8f9fa;
+            min-height: 100vh;
         }
         a { text-decoration: none; color: inherit; }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px 150px 30px;
+            background-color: #ffffff;
+        }
 
         /* Navbar */
         .navbar {
@@ -147,14 +154,6 @@ function getDisplayStatusText($status) {
             font-weight: 500;
             padding: 8px 16px;
             border-radius: 4px;
-        }
-
-        /* Main Content Area */
-        .main-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            background-color: #ffffff;
-            padding: 80px 150px 30px;
         }
 
         /* Page Title */
@@ -363,10 +362,20 @@ function getDisplayStatusText($status) {
         }
 
         .btn-view {
-            background-color: #ff6600;
+            background-color: transparent;
+            color: #ff6600;
+            border: none;
+            outline: none;
+            text-decoration: none;
+            font-weight: 500;
         }
         .btn-view:hover {
-            background-color: #e65c00;
+            color: #e65c00;
+            text-decoration: underline;
+        }
+        .btn-view:focus {
+            outline: none;
+            box-shadow: none;
         }
 
         .btn-remove {
@@ -480,40 +489,83 @@ function getDisplayStatusText($status) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($bookmarked_properties as $property): ?>
+                        <?php if (empty($bookmarked_properties)): ?>
                             <tr>
-                                <td>
-                                    <div class="property-info">
-                                        <div class="property-image">
-                                            <img src="<?php echo htmlspecialchars($property['image']); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
-                                        </div>
-                                        <div class="property-details">
-                                            <div class="title"><?php echo htmlspecialchars($property['title']); ?></div>
-                                            <div class="location"><?php echo htmlspecialchars($property['location']); ?></div>
-                                            <div class="expires">Expires on <?php echo htmlspecialchars($property['expires']); ?></div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><?php echo htmlspecialchars($property['category']); ?></td>
-                                <td>
-                                    <div class="status-display">
-                                        <span class="status-circle <?php echo getStatusCircleClass($property['status']); ?>"></span>
-                                        <span class="status-text"><?php echo getDisplayStatusText($property['status']); ?></span>
-                                    </div>
-                                </td>
-                                <td><?php echo htmlspecialchars($property['price']); ?></td>
-                                <td>
-                                    <a href="#">View Listing</a>
-                                </td>
-                                <td class="action-cell">
-                                    <button class="btn-remove">Remove</button>
+                                <td colspan="6" style="text-align: center; padding: 20px;">
+                                    No bookmarked properties found. Start saving some listings!
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($bookmarked_properties as $property): ?>
+                                <tr>
+                                    <td>
+                                        <div class="property-info">
+                                            <div class="property-image">
+                                                <img src="<?php echo htmlspecialchars($property['image']); ?>" 
+                                                     alt="<?php echo htmlspecialchars($property['title']); ?>">
+                                            </div>
+                                            <div class="property-details">
+                                                <div class="title"><?php echo htmlspecialchars($property['title']); ?></div>
+                                                <div class="location"><?php echo htmlspecialchars($property['location']); ?></div>
+                                                <div class="expires">Expires on <?php echo htmlspecialchars($property['expiry_date']); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($property['category']); ?></td>
+                                    <td>
+                                        <div class="status-display">
+                                            <span class="status-circle <?php echo getStatusCircleClass($property['status']); ?>"></span>
+                                            <span class="status-text"><?php echo getDisplayStatusText($property['status']); ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($property['price']); ?></td>
+                                    <td>
+                                        <a href="listing.php?id=<?php echo $property['listing_id']; ?>" class="btn-view">View Listing</a>
+                                    </td>
+                                    <td class="action-cell">
+                                        <button class="btn-remove" onclick="removeBookmark(<?php echo $property['listing_id']; ?>)">Remove</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </section>
         </main>
     </div>
+
+    <script>
+        async function removeBookmark(listingId) {
+            if (!confirm('Are you sure you want to remove this listing from your bookmarks?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('save_listing.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        'listing_id': listingId,
+                        'action': 'unsave'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove the row from the table
+                    const row = document.querySelector(`button[onclick="removeBookmark(${listingId})"]`).closest('tr');
+                    row.remove();
+                } else {
+                    alert(data.message || 'An error occurred while removing the bookmark');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while removing the bookmark');
+            }
+        }
+    </script>
 </body>
 </html>

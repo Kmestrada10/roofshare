@@ -30,6 +30,18 @@ try {
         exit();
     }
 
+    // Check if the listing is saved by the current user
+    $is_saved = false;
+    if (isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter') {
+        $stmt = $db->prepare("
+            SELECT COUNT(*) 
+            FROM Saves 
+            WHERE renter_id = ? AND listing_id = ?
+        ");
+        $stmt->execute([$_SESSION['user_id'], $property_id]);
+        $is_saved = (bool)$stmt->fetchColumn();
+    }
+
     // Fetch property images
     $stmt = $db->prepare("
         SELECT photo_url, photo_order
@@ -120,13 +132,18 @@ try {
                 <div class="location"><?php echo htmlspecialchars($property['city'] . ', ' . $property['state']); ?></div>
             </div>
             <?php
-            $is_saved = false; // This will be implemented later with actual database check
             ?>
             <form action="save_listing.php" method="post" style="display: inline;">
                 <input type="hidden" name="listing_id" value="<?php echo $property_id; ?>">
                 <input type="hidden" name="action" value="<?php echo $is_saved ? 'unsave' : 'save'; ?>">
-                <button type="submit" class="bookmark-button <?php echo $is_saved ? 'saved' : ''; ?>"
-                        <?php echo (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'renter') ? 'disabled' : ''; ?>>
+                <?php
+                // Debug output
+                $is_renter = isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter';
+                error_log("Session debug - user_id: " . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'not set'));
+                error_log("Session debug - user_type: " . (isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'not set'));
+                error_log("Session debug - is_renter: " . ($is_renter ? 'true' : 'false'));
+                ?>
+                <button type="button" class="bookmark-button <?php echo $is_saved ? 'saved' : ''; ?>">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
                     </svg>
@@ -272,22 +289,33 @@ try {
         document.querySelector('.bookmark-button')?.addEventListener('click', async function(event) {
             if (this.disabled) return;
             
+            event.preventDefault(); // Prevent form submission
+            
             try {
+                const form = this.closest('form');
+                const formData = new FormData(form);
+                
                 const response = await fetch('save_listing.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: new URLSearchParams(new FormData(this.closest('form')))
+                    body: new URLSearchParams(formData)
                 });
 
                 const data = await response.json();
+                
                 if (data.success) {
+                    // Toggle the saved state
                     this.classList.toggle('saved');
-                    this.querySelector('span').textContent = this.classList.contains('saved') ? 'Saved' : 'Save';
-                    this.closest('form').querySelector('input[name="action"]').value = this.classList.contains('saved') ? 'unsave' : 'save';
+                    const span = this.querySelector('span');
+                    span.textContent = this.classList.contains('saved') ? 'Saved' : 'Save';
+                    
+                    // Update the action value
+                    const actionInput = form.querySelector('input[name="action"]');
+                    actionInput.value = this.classList.contains('saved') ? 'unsave' : 'save';
                 } else {
-                    alert(data.message || 'An error occurred');
+                    alert(data.message || 'An error occurred while saving the listing');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -301,26 +329,39 @@ try {
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            border: 2px solid #ddd;
+            border: 2px solid #ff8c00;
             border-radius: 20px;
             background: white;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ff8c00;
+            outline: none;
         }
 
         .bookmark-button:hover:not(:disabled) {
-            border-color: #666;
+            border-color: #ff8c00;
+            background-color: #fff5e6;
         }
 
         .bookmark-button.saved {
-            background: #e31c5f;
-            border-color: #e31c5f;
+            background: #ff8c00;
+            border-color: #ff8c00;
             color: white;
+        }
+
+        .bookmark-button.saved:hover:not(:disabled) {
+            background: #e67e00;
+            border-color: #e67e00;
         }
 
         .bookmark-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            pointer-events: none;
+            border-color: #ddd;
+            color: #999;
         }
 
         .bookmark-button svg {
