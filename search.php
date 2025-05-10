@@ -2,7 +2,6 @@
 require_once("config/db.php");
 session_start();
 
-// Set up pagination
 $items_per_page = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $items_per_page;
@@ -149,7 +148,7 @@ $offset = ($page - 1) * $items_per_page;
         function initMap() {
             const map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 12,
-                center: { lat: 39.8283, lng: -98.5795 }, // Center of USA
+                center: { lat: 39.8283, lng: -98.5795 }, 
                 mapTypeControl: true,
                 streetViewControl: true,
                 fullscreenControl: true
