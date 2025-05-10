@@ -1,12 +1,12 @@
 <?php
-// Enable error reporting
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
 require_once("config/db.php");
 
-// Get property ID from URL
+
 $property_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($property_id <= 0) {
@@ -15,7 +15,7 @@ if ($property_id <= 0) {
 }
 
 try {
-    // Fetch property details
+ 
     $stmt = $db->prepare("
         SELECT l.*, r.name as realtor_name, r.verification_status
         FROM Listing l
@@ -25,7 +25,7 @@ try {
     $stmt->execute([$property_id]);
     $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Debug logging
+   
     error_log("Property ID being queried: " . $property_id);
     error_log("Query result: " . print_r($property, true));
 
@@ -35,7 +35,7 @@ try {
         exit();
     }
 
-    // Check if the listing is saved by the current user
+    
     $is_saved = false;
     if (isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter') {
         $stmt = $db->prepare("
@@ -47,7 +47,7 @@ try {
         $is_saved = (bool)$stmt->fetchColumn();
     }
 
-    // Fetch property images
+ 
     $stmt = $db->prepare("
         SELECT photo_url, photo_order
         FROM ListingPhoto
@@ -57,37 +57,31 @@ try {
     $stmt->execute([$property_id]);
     $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Direct database debugging
+
     error_log("=== Database Debug Info ===");
     error_log("Property ID: " . $property_id);
     
-    // Check all photos in the database for this listing
     $debug_stmt = $db->prepare("SELECT * FROM ListingPhoto WHERE listing_id = ?");
     $debug_stmt->execute([$property_id]);
     $all_photos = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
     error_log("All photos in database for this listing: " . print_r($all_photos, true));
     
-    // Check if the upload directory exists and is writable
     $upload_dir = 'uploads/listing_images/';
     error_log("Upload directory exists: " . (is_dir($upload_dir) ? 'Yes' : 'No'));
     error_log("Upload directory is writable: " . (is_writable($upload_dir) ? 'Yes' : 'No'));
     
-    // List all files in the upload directory
     error_log("Files in upload directory: " . print_r(scandir($upload_dir), true));
 
-    // If no images found, use placeholder
     if (empty($images)) {
         error_log("No images found for listing " . $property_id . ", using placeholder");
         $images = [['photo_url' => 'assets/images/apartment-placeholder.jpg', 'photo_order' => 1]];
     }
 
-    // Ensure we have at least 5 images by repeating the first image if needed
     $firstImage = $images[0];
     while (count($images) < 5) {
         $images[] = $firstImage;
     }
 
-    // Fetch amenities
     $stmt = $db->prepare("
         SELECT a.name
         FROM Amenities a
@@ -99,7 +93,6 @@ try {
     $amenities = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 } catch (PDOException $e) {
-    // Log error and redirect
     error_log("Error in listing.php: " . $e->getMessage());
     header("Location: index.php");
     exit();
@@ -112,18 +105,14 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($property['title']); ?> | RoofShare</title>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYlDB7H0z4_06e7MPKycHK12jw4lpnyg&libraries=places"></script>
     
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Main CSS -->
     <link rel="stylesheet" href="assets/css/listing.css">
 </head>
 <body>
@@ -190,7 +179,6 @@ try {
             </div>
             <div class="small-images">
                 <?php
-                // Show exactly 4 small images (indexes 1-4)
                 for ($i = 1; $i <= 4; $i++) {
                     echo '<img src="' . htmlspecialchars($images[$i]['photo_url']) . '"
                               alt="Property image ' . ($i + 1) . '">';
@@ -216,7 +204,6 @@ try {
                         <?php foreach ($amenities as $amenity): ?>
                         <div class="amenity">
                             <?php
-                            // Map amenities to Font Awesome icons
                             $icon_map = [
                                 'Wifi' => 'fa-wifi',
                                 'Air Conditioning' => 'fa-snowflake',
@@ -311,7 +298,6 @@ try {
                         return;
                     }
 
-                    // Store the coordinates for the search
                     searchInput.dataset.lat = place.geometry.location.lat();
                     searchInput.dataset.lng = place.geometry.location.lng();
                 }
@@ -330,21 +316,18 @@ try {
             }
         }
 
-        // Initialize autocomplete when the page loads
         window.onload = function() {
             initAutocomplete();
             
-            // Remove any existing event listeners
             const bookmarkButton = document.querySelector('.bookmark-button');
             if (bookmarkButton) {
                 const newBookmarkButton = bookmarkButton.cloneNode(true);
                 bookmarkButton.parentNode.replaceChild(newBookmarkButton, bookmarkButton);
                 
-                // Add the event listener to the new button
                 newBookmarkButton.addEventListener('click', async function(event) {
                     if (this.disabled) return;
                     
-                    event.preventDefault(); // Prevent form submission
+                    event.preventDefault(); 
                     
                     try {
                         const form = this.closest('form');
@@ -361,12 +344,10 @@ try {
                         const data = await response.json();
                         
                         if (data.success) {
-                            // Toggle the saved state
                             this.classList.toggle('saved');
                             const span = this.querySelector('span');
                             span.textContent = this.classList.contains('saved') ? 'Saved' : 'Save';
                             
-                            // Update the action value
                             const actionInput = form.querySelector('input[name="action"]');
                             actionInput.value = this.classList.contains('saved') ? 'unsave' : 'save';
                         } else {
@@ -380,7 +361,6 @@ try {
             }
         };
 
-        // Report Modal Functions
         function openReportModal() {
             document.getElementById('reportModal').style.display = 'flex';
         }
@@ -389,7 +369,6 @@ try {
             document.getElementById('reportModal').style.display = 'none';
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('reportModal');
             if (event.target === modal) {
@@ -469,7 +448,6 @@ try {
             height: 20px;
         }
 
-        /* Google Places Autocomplete Dropdown Styling */
         .pac-container {
             border-radius: 8px !important;
             margin-top: 5px !important;
@@ -501,7 +479,6 @@ try {
             font-weight: 500 !important;
         }
 
-        /* Image gallery styling */
         .gallery {
             width: 100%;
             margin-bottom: 24px;
@@ -577,7 +554,6 @@ try {
             color: #856404;
         }
 
-        /* Report Section Styles */
         .report-section {
             margin-top: 40px;
         }
@@ -595,7 +571,6 @@ try {
             text-decoration: underline;
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
