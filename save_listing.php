@@ -58,7 +58,7 @@ try {
         }
 
         // Save the listing
-        $stmt = $db->prepare("INSERT INTO Saves (renter_id, listing_id, saved_date) VALUES (?, ?, NOW())");
+        $stmt = $db->prepare("INSERT INTO Saves (renter_id, listing_id, saved_at) VALUES (?, ?, NOW())");
         $result = $stmt->execute([$renter_id, $listing_id]);
         error_log("Save query result: " . ($result ? 'Success' : 'Failed'));
         if ($result) {
@@ -86,5 +86,5 @@ try {
 } catch (PDOException $e) {
     error_log("Database error in save_listing.php: " . $e->getMessage());
     error_log("SQL State: " . $e->getCode());
-    echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+    echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
 } 
