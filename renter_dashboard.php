@@ -21,24 +21,37 @@ $name = $user['name'] ?? 'Renter';
 
 // Fetch bookmarked properties with all necessary details
 try {
-    // Now get the full details
+    // Debug log the renter_id
+    error_log("Fetching bookmarks for renter_id: " . $renter_id);
+
+    // First check if there are any saves at all
+    $check_stmt = $db->prepare("SELECT COUNT(*) FROM Saves WHERE renter_id = ?");
+    $check_stmt->execute([$renter_id]);
+    $save_count = $check_stmt->fetchColumn();
+    error_log("Total saves found: " . $save_count);
+
+    // Now get the full details with a simpler query first
     $stmt = $db->prepare("
         SELECT 
             l.*,
             s.saved_at as saved_date,
-            COALESCE(lp.photo_url, 'assets/images/apartment-placeholder.jpg') as image
+            COALESCE(
+                (SELECT photo_url FROM ListingPhoto WHERE listing_id = l.listing_id ORDER BY photo_order LIMIT 1),
+                'assets/images/apartment-placeholder.jpg'
+            ) as image
         FROM Saves s
         INNER JOIN Listing l ON s.listing_id = l.listing_id
-        LEFT JOIN (
-            SELECT listing_id, photo_url 
-            FROM ListingPhoto 
-            WHERE photo_order = 1
-        ) lp ON l.listing_id = lp.listing_id
         WHERE s.renter_id = ?
         ORDER BY s.saved_at DESC
     ");
     $stmt->execute([$renter_id]);
     $bookmarked_properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Debug log the results
+    error_log("Number of bookmarked properties found: " . count($bookmarked_properties));
+    if (!empty($bookmarked_properties)) {
+        error_log("First property data: " . print_r($bookmarked_properties[0], true));
+    }
 
     // Format the properties
     foreach ($bookmarked_properties as &$property) {
@@ -444,7 +457,7 @@ function getDisplayStatusText($status) {
                 <a href="index.php" class="nav-link">Home</a>
                 <a href="roommate_matches.php" class="nav-link">Matches</a>
                 <a href="roommate_preferences.php" class="nav-link">Find Roommate</a>
-                <a href="login.php?logout=1" class="logout-link">Logout</a>
+                <a href="index.php?logout=1" class="logout-link">Logout</a>
             </div>
         </header>
 

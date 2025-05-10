@@ -119,9 +119,10 @@ try {
             </button>
         </div>
         <div class="header-links">
-            <a href="#" class="header-link">Manage Rentals</a>
-            <a href="#" class="header-link">Sign In</a>
-            <a href="#" class="header-link">Add Property</a>
+            <a href="index.php" class="header-link">Home</a>
+            <?php if (isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter'): ?>
+                <a href="renter_dashboard.php" class="header-link">My Bookmarks</a>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -284,44 +285,52 @@ try {
         // Initialize autocomplete when the page loads
         window.onload = function() {
             initAutocomplete();
-        };
-
-        document.querySelector('.bookmark-button')?.addEventListener('click', async function(event) {
-            if (this.disabled) return;
             
-            event.preventDefault(); // Prevent form submission
-            
-            try {
-                const form = this.closest('form');
-                const formData = new FormData(form);
+            // Remove any existing event listeners
+            const bookmarkButton = document.querySelector('.bookmark-button');
+            if (bookmarkButton) {
+                const newBookmarkButton = bookmarkButton.cloneNode(true);
+                bookmarkButton.parentNode.replaceChild(newBookmarkButton, bookmarkButton);
                 
-                const response = await fetch('save_listing.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams(formData)
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Toggle the saved state
-                    this.classList.toggle('saved');
-                    const span = this.querySelector('span');
-                    span.textContent = this.classList.contains('saved') ? 'Saved' : 'Save';
+                // Add the event listener to the new button
+                newBookmarkButton.addEventListener('click', async function(event) {
+                    if (this.disabled) return;
                     
-                    // Update the action value
-                    const actionInput = form.querySelector('input[name="action"]');
-                    actionInput.value = this.classList.contains('saved') ? 'unsave' : 'save';
-                } else {
-                    alert(data.message || 'An error occurred while saving the listing');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while saving the listing');
+                    event.preventDefault(); // Prevent form submission
+                    
+                    try {
+                        const form = this.closest('form');
+                        const formData = new FormData(form);
+                        
+                        const response = await fetch('save_listing.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: new URLSearchParams(formData)
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Toggle the saved state
+                            this.classList.toggle('saved');
+                            const span = this.querySelector('span');
+                            span.textContent = this.classList.contains('saved') ? 'Saved' : 'Save';
+                            
+                            // Update the action value
+                            const actionInput = form.querySelector('input[name="action"]');
+                            actionInput.value = this.classList.contains('saved') ? 'unsave' : 'save';
+                        } else {
+                            alert(data.message || 'An error occurred while saving the listing');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while saving the listing');
+                    }
+                });
             }
-        });
+        };
     </script>
     <style>
         .bookmark-button {

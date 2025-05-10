@@ -4,6 +4,16 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
+
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    setcookie(session_name(), '', time() - 3600, '/');
+    header("Location: index.php");
+    exit();
+}
+
 require_once("config/db.php");
 
 // Fetch recent listings from database
@@ -149,10 +159,13 @@ try {
 </head>
 <body>
     <header class="header">
-        <!-- Auth Navigation (Top Right) -->
-        <div class="auth-links">
-            <a href="login.php">Log In</a>
-            <a href="login.php?view=register">Sign Up</a>
+        <div class="header-links">
+            <?php if (isset($_SESSION['user_type']) && strtolower($_SESSION['user_type']) === 'renter'): ?>
+                <a href="renter_dashboard.php" class="header-link">My Bookmarks</a>
+            <?php else: ?>
+                <a href="login.php" class="header-link">Login</a>
+                <a href="login.php?register=1" class="header-link">Sign Up</a>
+            <?php endif; ?>
         </div>
     </header>
 

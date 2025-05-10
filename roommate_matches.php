@@ -365,7 +365,7 @@ usort($matches, function($a, $b) use ($current_prefs) {
             </div>
             <div class="navbar-right">
                 <a href="roommate_preferences.php" class="nav-link">Set Preferences</a>
-                <a href="login.php?logout=1" class="logout-link">Logout</a>
+                <a href="index.php?logout=1" class="logout-link">Logout</a>
             </div>
         </header>
 

@@ -228,7 +228,7 @@ function checked($array, $value) {
                 </div>
                 <div class="header-links-right">
                     <a href="roommate_matches.php" class="header-link">My Matches</a>
-                    <a href="login.php?logout=1" class="header-link">Logout</a>
+                    <a href="index.php?logout=1" class="header-link">Logout</a>
                 </div>
             </div>
         </header>

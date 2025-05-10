@@ -473,7 +473,7 @@ if ($role === 'Moderator') {
             </div>
             <div class="navbar-right">
                 <a href="index.php" class="nav-link">Home</a>
-                <a href="login.php?logout=1" class="logout-link">Logout</a>
+                <a href="index.php?logout=1" class="logout-link">Logout</a>
             </div>
         </header>
 
