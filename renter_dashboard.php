@@ -295,11 +295,17 @@ function getDisplayStatusText($status) {
         }
         .property-info { display: flex; align-items: center; gap: 15px; }
         .property-image {
-            width: 120px; height: 90px;
+            width: 120px;
+            height: 90px;
             border-radius: 4px;
-            object-fit: contain;
-            position: relative;
             overflow: hidden;
+            flex-shrink: 0;
+        }
+        .property-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
         }
         .property-details .title {
             font-weight: 500;
